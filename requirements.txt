@@ -134,7 +134,6 @@ fastavro==1.9.5
 fastjsonschema==2.20.0
 filelock==3.13.1
 filetype==1.2.0
-Flask==3.0.3
 Flask-AppBuilder==4.4.1
 Flask-Babel==2.0.0
 Flask-Caching==2.3.0
