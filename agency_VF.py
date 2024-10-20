@@ -11,6 +11,15 @@ import folium
 from folium.plugins import HeatMap
 from streamlit_folium import folium_static
 import warnings
+from io import StringIO
+
+
+# Read data from Streamlit secrets
+data = st.secrets["data"]["my_agency_data"]
+df_agency = pd.read_csv(StringIO(data))
+
+# Now you can use df_agency as a regular pandas DataFrame
+st.write(df_agency)
 
 # Suppress warnings for cleaner output
 warnings.filterwarnings('ignore')
