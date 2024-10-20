@@ -1,18 +1,5 @@
 # agency_1.py
-# --------------------------------------
-# Step 1: Setup and Imports
-# --------------------------------------
-import pandas as pd
-import numpy as np
-import plotly.express as px
-import plotly.graph_objects as go
 import streamlit as st
-import folium
-from folium.plugins import HeatMap
-from streamlit_folium import folium_static
-import warnings
-from io import StringIO
-
 
 # Streamlit configuration
 st.set_page_config(
@@ -20,6 +7,23 @@ st.set_page_config(
     page_title="🏠 Tableau de Bord d'Analyse de la Part de Marché Immobilière",
     page_icon=":house:"
 )
+
+
+# --------------------------------------
+# Step 1: Setup and Imports
+# --------------------------------------
+import pandas as pd
+import numpy as np
+import plotly.express as px
+import plotly.graph_objects as go
+
+import folium
+from folium.plugins import HeatMap
+from streamlit_folium import folium_static
+import warnings
+from io import StringIO
+
+
 
 # Title of the application
 st.title("🏠 Tableau de Bord d'Analyse de la Part de Marché Immobilière")
