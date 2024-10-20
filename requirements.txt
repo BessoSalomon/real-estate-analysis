@@ -175,7 +175,7 @@ google-auth-oauthlib==1.2.1
 google-pasta==0.2.0
 google-re2==1.1.20240601
 googleapis-common-protos==1.63.1
-googletrans==3.1.0a0
+googletrans==4.0.0-rc1
 greenlet==3.0.3
 grpcio==1.64.1
 gspread==6.1.3
