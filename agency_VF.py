@@ -23,48 +23,23 @@ st.title("🏠 Tableau de Bord d'Analyse de la Part de Marché Immobilière")
 warnings.filterwarnings('ignore')
 
 # --------------------------------------
-# Step 1: Load the agency data from Streamlit secrets
+# Step 1: Load the agency and market data from Streamlit secrets
 # --------------------------------------
+
 # Fetching the agency data from Streamlit secrets
-data = st.secrets["data"]["my_agency_data"]
-df_agency = pd.read_csv(StringIO(data))
+agency_data = st.secrets["data"]["my_agency_data"]
+df_agency = pd.read_csv(StringIO(agency_data))
 
-# Display the agency data for verification
+# Fetching the market data from Streamlit secrets
+market_data = st.secrets["data"]["all_cities_belgium"]
+df_market = pd.read_csv(StringIO(market_data))
+
+# Display the data for verification (optional)
 st.write(df_agency)
+st.write(df_market.head())
 
 # --------------------------------------
-# Step 2: Data Loading with Delimiter Detection (Market Data)
-# --------------------------------------
-@st.cache_data
-def load_market_data():
-    """Load the market data from 'all_cities_belgium.csv'."""
-    try:
-        # Check delimiter and load market data
-        with open('all_cities_belgium.csv', 'r', encoding='utf-8-sig') as f:
-            first_line = f.readline()
-            if ',' in first_line and '\t' not in first_line:
-                sep = ','
-            elif '\t' in first_line:
-                sep = '\t'
-            else:
-                sep = ','
-        df_market = pd.read_csv('all_cities_belgium.csv', sep=sep, encoding='utf-8-sig')
-        return df_market
-    except FileNotFoundError:
-        st.error("Fichier 'all_cities_belgium.csv' non trouvé dans le dépôt.")
-        st.stop()
-    except Exception as e:
-        st.error(f"Erreur lors de la lecture du fichier 'all_cities_belgium.csv' : {e}")
-        st.stop()
-
-# Load the market data
-df_market = load_market_data()
-
-# Display market data for verification
-st.write(df_market.head())  # This is for testing. You can remove it later.
-
-# --------------------------------------
-# Step 3: Data Cleaning and Preprocessing
+# Step 2: Data Cleaning and Preprocessing
 # --------------------------------------
 def preprocess_data(df_market, df_agency):
     # Standardize column names for consistency: lowercase
@@ -82,7 +57,7 @@ def preprocess_data(df_market, df_agency):
     if 'date' in df_market.columns:
         df_market['date'] = pd.to_datetime(df_market['date'], errors='coerce', dayfirst=True)
     else:
-        st.error("Colonne 'date' non trouvée dans 'all_cities_belgium.csv'. Veuillez vérifier que la colonne 'date' existe et est correctement orthographiée.")
+        st.error("Colonne 'date' non trouvée dans les données du marché. Veuillez vérifier que la colonne 'date' existe et est correctement orthographiée.")
         st.stop()
 
     df_market['year'] = df_market['date'].dt.year
@@ -94,10 +69,10 @@ def preprocess_data(df_market, df_agency):
         try:
             df_market[['latitude', 'longitude']] = df_market['map'].str.strip().str.split(',', expand=True).astype(float)
         except Exception as e:
-            st.error(f"Erreur lors du traitement de la colonne 'map' dans 'all_cities_belgium.csv' : {e}")
+            st.error(f"Erreur lors du traitement de la colonne 'map' dans les données du marché : {e}")
             st.stop()
     else:
-        st.error("Colonne 'map' non trouvée dans 'all_cities_belgium.csv'.")
+        st.error("Colonne 'map' non trouvée dans les données du marché.")
         st.stop()
 
     # Clean 'prix médian' column
@@ -105,14 +80,14 @@ def preprocess_data(df_market, df_agency):
         df_market['prix médian'] = df_market['prix médian'].replace('[\€,]', '', regex=True).astype(float)
         df_market['prix médian'].fillna(df_market['prix médian'].median(), inplace=True)
     else:
-        st.error("Colonne 'prix médian' non trouvée dans 'all_cities_belgium.csv'.")
+        st.error("Colonne 'prix médian' non trouvée dans les données du marché.")
         st.stop()
 
     # Clean 'nombre de ventes' column
     if 'nombre de ventes' in df_market.columns:
         df_market['nombre de ventes'] = pd.to_numeric(df_market['nombre de ventes'], errors='coerce').fillna(0).astype(int)
     else:
-        st.error("Colonne 'nombre de ventes' non trouvée dans 'all_cities_belgium.csv'.")
+        st.error("Colonne 'nombre de ventes' non trouvée dans les données du marché.")
         st.stop()
 
     # Drop rows where 'commune' is missing
@@ -120,7 +95,7 @@ def preprocess_data(df_market, df_agency):
         df_market.dropna(subset=['commune'], inplace=True)
         df_market.reset_index(drop=True, inplace=True)
     else:
-        st.error("Colonne 'commune' non trouvée dans 'all_cities_belgium.csv'.")
+        st.error("Colonne 'commune' non trouvée dans les données du marché.")
         st.stop()
 
     # Agency Data Preprocessing
@@ -186,7 +161,6 @@ df_market, df_agency = preprocess_data(df_market, df_agency)
 # --------------------------------------
 # Now continue with the rest of your analysis and visualization steps...
 # --------------------------------------
-
 
 # --------------------------------------
 # Step 4: Sidebar Filters for Interactivity
