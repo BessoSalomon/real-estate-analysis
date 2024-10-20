@@ -17,7 +17,7 @@ scikit-learn==1.5.1
 
 # Apache Airflow and Flask
 apache-airflow==2.9.2
-Flask==2.2.5  # Downgraded to resolve the version conflict with Airflow
+Flask==2.2.5  # Use Flask 2.2.5 to avoid version conflicts
 
 # Additional requirements (you can uncomment these if needed)
 torch==2.2.2
