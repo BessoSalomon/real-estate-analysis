@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-
 import folium
 from folium.plugins import HeatMap
 from streamlit_folium import folium_static
@@ -31,7 +30,6 @@ df_agency = pd.read_csv(StringIO(data))
 
 # Now you can use df_agency as a regular pandas DataFrame
 st.write(df_agency)
-
 
 # --------------------------------------
 # Step 2: Data Loading with Delimiter Detection
