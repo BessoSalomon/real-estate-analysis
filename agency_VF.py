@@ -31,6 +31,8 @@ df_agency = pd.read_csv(StringIO(data))
 
 # Now you can use df_agency as a regular pandas DataFrame
 st.write(df_agency)
+
+
 # --------------------------------------
 # Step 2: Data Loading with Delimiter Detection
 # --------------------------------------
