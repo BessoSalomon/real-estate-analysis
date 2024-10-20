@@ -32,6 +32,11 @@ fr_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/fr
 # Update the onnxruntime version to a compatible one for Python 3.12
 onnxruntime==1.19.0  # You can also try newer versions like 1.19.2 if necessary
 
+
+# Update pulsar-client version to 3.4.0 or 3.5.0 as 3.3.0 is not available
+pulsar-client==3.5.0  # Choose the latest available version
+
+
 # Other dependencies
 absl-py==2.1.0
 aiofiles==24.1.0
@@ -328,7 +333,6 @@ pinecone-plugin-interface==0.0.7
 platformdirs==4.2.2
 plotly-express==0.4.1
 pluggy==1.5.0
-pulsar-client==3.3.0
 pure-eval==0.2.2
 pyarrow==17.0.0
 pyasn1==0.5.0
