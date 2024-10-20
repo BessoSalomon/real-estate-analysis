@@ -25,19 +25,21 @@ warnings.filterwarnings('ignore')
 # --------------------------------------
 # Step 1: Load the agency data from Streamlit secrets
 # --------------------------------------
+# Fetching the agency data from Streamlit secrets
 data = st.secrets["data"]["my_agency_data"]
 df_agency = pd.read_csv(StringIO(data))
 
-# Now you can use df_agency as a regular pandas DataFrame
+# Display the agency data for verification
 st.write(df_agency)
 
 # --------------------------------------
-# Step 2: Data Loading with Delimiter Detection
+# Step 2: Data Loading with Delimiter Detection (Market Data)
 # --------------------------------------
 @st.cache_data
-def load_data():
+def load_market_data():
+    """Load the market data from 'all_cities_belgium.csv'."""
     try:
-        # Load market data
+        # Check delimiter and load market data
         with open('all_cities_belgium.csv', 'r', encoding='utf-8-sig') as f:
             first_line = f.readline()
             if ',' in first_line and '\t' not in first_line:
@@ -47,34 +49,19 @@ def load_data():
             else:
                 sep = ','
         df_market = pd.read_csv('all_cities_belgium.csv', sep=sep, encoding='utf-8-sig')
+        return df_market
     except FileNotFoundError:
-        st.error("Fichier 'all_cities_belgium.csv' non trouvé.")
+        st.error("Fichier 'all_cities_belgium.csv' non trouvé dans le dépôt.")
         st.stop()
     except Exception as e:
         st.error(f"Erreur lors de la lecture du fichier 'all_cities_belgium.csv' : {e}")
         st.stop()
 
-    try:
-        # Load agency data
-        with open('my_agency_data.csv', 'r', encoding='utf-8-sig') as f:
-            first_line = f.readline()
-            if ',' in first_line and '\t' not in first_line:
-                sep_agency = ','
-            elif '\t' in first_line:
-                sep_agency = '\t'
-            else:
-                sep_agency = ','
-        df_agency = pd.read_csv('my_agency_data.csv', sep=sep_agency, encoding='utf-8-sig')
-    except FileNotFoundError:
-        st.error("Fichier 'my_agency_data.csv' non trouvé.")
-        st.stop()
-    except Exception as e:
-        st.error(f"Erreur lors de la lecture du fichier 'my_agency_data.csv' : {e}")
-        st.stop()
+# Load the market data
+df_market = load_market_data()
 
-    return df_market, df_agency
-
-df_market, df_agency = load_data()
+# Display market data for verification
+st.write(df_market.head())  # This is for testing. You can remove it later.
 
 # --------------------------------------
 # Step 3: Data Cleaning and Preprocessing
@@ -140,7 +127,7 @@ def preprocess_data(df_market, df_agency):
     if 'date de transaction' in df_agency.columns:
         df_agency['date'] = pd.to_datetime(df_agency['date de transaction'], errors='coerce', dayfirst=True)
     else:
-        st.error("Colonne 'date de transaction' non trouvée dans 'my_agency_data.csv'.")
+        st.error("Colonne 'date de transaction' non trouvée dans les données de l'agence.")
         st.stop()
 
     df_agency['year'] = df_agency['date'].dt.year
@@ -152,10 +139,10 @@ def preprocess_data(df_market, df_agency):
         try:
             df_agency[['latitude', 'longitude']] = df_agency['map'].str.strip().str.split(',', expand=True).astype(float)
         except Exception as e:
-            st.error(f"Erreur lors du traitement de la colonne 'map' dans 'my_agency_data.csv' : {e}")
+            st.error(f"Erreur lors du traitement de la colonne 'map' dans les données de l'agence : {e}")
             st.stop()
     else:
-        st.error("Colonne 'map' non trouvée dans 'my_agency_data.csv'.")
+        st.error("Colonne 'map' non trouvée dans les données de l'agence.")
         st.stop()
 
     # Assuming each row is a transaction; set 'nombre de ventes' to 1
@@ -165,7 +152,7 @@ def preprocess_data(df_market, df_agency):
     if 'communes' in df_agency.columns:
         df_agency.rename(columns={'communes': 'commune'}, inplace=True)
     else:
-        st.error("Colonne 'communes' non trouvée dans 'my_agency_data.csv'.")
+        st.error("Colonne 'communes' non trouvée dans les données de l'agence.")
         st.stop()
 
     # Drop rows where 'commune' is missing
@@ -173,7 +160,7 @@ def preprocess_data(df_market, df_agency):
         df_agency.dropna(subset=['commune'], inplace=True)
         df_agency.reset_index(drop=True, inplace=True)
     else:
-        st.error("Colonne 'commune' non trouvée dans 'my_agency_data.csv'.")
+        st.error("Colonne 'commune' non trouvée dans les données de l'agence.")
         st.stop()
 
     # Merge geographic data if missing in agency data
@@ -193,7 +180,13 @@ def preprocess_data(df_market, df_agency):
 
     return df_market, df_agency
 
+# Preprocess the data
 df_market, df_agency = preprocess_data(df_market, df_agency)
+
+# --------------------------------------
+# Now continue with the rest of your analysis and visualization steps...
+# --------------------------------------
+
 
 # --------------------------------------
 # Step 4: Sidebar Filters for Interactivity
