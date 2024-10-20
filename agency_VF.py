@@ -1,17 +1,4 @@
-# agency_1.py
 import streamlit as st
-
-# Streamlit configuration
-st.set_page_config(
-    layout="wide",
-    page_title="🏠 Tableau de Bord d'Analyse de la Part de Marché Immobilière",
-    page_icon=":house:"
-)
-
-
-# --------------------------------------
-# Step 1: Setup and Imports
-# --------------------------------------
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -23,38 +10,27 @@ from streamlit_folium import folium_static
 import warnings
 from io import StringIO
 
-
+# Streamlit configuration
+st.set_page_config(
+    layout="wide",
+    page_title="🏠 Tableau de Bord d'Analyse de la Part de Marché Immobilière",
+    page_icon=":house:"
+)
 
 # Title of the application
 st.title("🏠 Tableau de Bord d'Analyse de la Part de Marché Immobilière")
 
+# Suppress warnings for cleaner output
+warnings.filterwarnings('ignore')
 
-# Read data from Streamlit secrets
+# --------------------------------------
+# Step 1: Load the agency data from Streamlit secrets
+# --------------------------------------
 data = st.secrets["data"]["my_agency_data"]
 df_agency = pd.read_csv(StringIO(data))
 
 # Now you can use df_agency as a regular pandas DataFrame
 st.write(df_agency)
-
-# Suppress warnings for cleaner output
-warnings.filterwarnings('ignore')
-
-# Access market data from Streamlit secrets
-market_data = st.secrets["data"]["all_cities_belgium"]
-df_market = pd.read_csv(StringIO(market_data))
-
-# Now you can use df_market as a regular DataFrame
-st.write(df_market)
-
-
-# Display the dataframes
-st.write(df_agency)
-st.write(df_market)
-
-# Suppress warnings for cleaner output
-warnings.filterwarnings('ignore')
-
-
 # --------------------------------------
 # Step 2: Data Loading with Delimiter Detection
 # --------------------------------------
