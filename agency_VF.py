@@ -46,6 +46,15 @@ df_market = pd.read_csv(StringIO(market_data))
 # Now you can use df_market as a regular DataFrame
 st.write(df_market)
 
+
+# Display the dataframes
+st.write(df_agency)
+st.write(df_market)
+
+# Suppress warnings for cleaner output
+warnings.filterwarnings('ignore')
+
+
 # --------------------------------------
 # Step 2: Data Loading with Delimiter Detection
 # --------------------------------------
