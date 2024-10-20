@@ -14,6 +14,17 @@ import warnings
 from io import StringIO
 
 
+# Streamlit configuration
+st.set_page_config(
+    layout="wide",
+    page_title="🏠 Tableau de Bord d'Analyse de la Part de Marché Immobilière",
+    page_icon=":house:"
+)
+
+# Title of the application
+st.title("🏠 Tableau de Bord d'Analyse de la Part de Marché Immobilière")
+
+
 # Read data from Streamlit secrets
 data = st.secrets["data"]["my_agency_data"]
 df_agency = pd.read_csv(StringIO(data))
@@ -24,15 +35,6 @@ st.write(df_agency)
 # Suppress warnings for cleaner output
 warnings.filterwarnings('ignore')
 
-# Streamlit configuration
-st.set_page_config(
-    layout="wide",
-    page_title="🏠 Tableau de Bord d'Analyse de la Part de Marché Immobilière",
-    page_icon=":house:"
-)
-
-# Title of the application
-st.title("🏠 Tableau de Bord d'Analyse de la Part de Marché Immobilière")
 
 # --------------------------------------
 # Step 2: Data Loading with Delimiter Detection
