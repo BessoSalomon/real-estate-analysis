@@ -1,6 +1,5 @@
 setuptools>=75.2.0
 wheel>=0.44.0
-distutils
 
 # Core requirements
 numpy==1.26.2  # Updated numpy to avoid conflicts
@@ -16,13 +15,17 @@ pmdarima==2.0.4
 prophet==1.1.6
 scikit-learn==1.5.1
 
-# Additional requirements
+# Apache Airflow and Flask
+apache-airflow==2.9.2
+Flask==2.2.5  # Downgraded to resolve the version conflict with Airflow
+
+# Additional requirements (you can uncomment these if needed)
 torch==2.2.2
 tensorflow==2.16.2
 transformers==4.44.2
 spacy==3.7.6
 
-# Corrected spaCy models without duplicates
+# Corrected spaCy model URLs without duplicates
 en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
 fr_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/fr_core_news_sm-3.7.0/fr_core_news_sm-3.7.0-py3-none-any.whl
 
