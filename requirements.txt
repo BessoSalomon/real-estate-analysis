@@ -1,8 +1,9 @@
 setuptools>=75.2.0
 wheel>=0.44.0
+distutils
 
 # Core requirements
-numpy==1.25.2
+numpy==1.26.2  # Updated numpy to avoid conflicts
 pandas==2.2.2
 matplotlib==3.9.2
 seaborn==0.13.2
