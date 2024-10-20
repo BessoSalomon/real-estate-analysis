@@ -1,4 +1,4 @@
-setuptools>=68.0.0
+setuptools>=75.2.0
 wheel
 
 # Core requirements
@@ -22,8 +22,9 @@ transformers==4.44.2
 spacy==3.7.6
 
 # Corrected spaCy model URLs without duplicates
-https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
-https://github.com/explosion/spacy-models/releases/download/fr_core_news_sm-3.7.0/fr_core_news_sm-3.7.0-py3-none-any.whl
+en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
+fr_core_news_sm @ https://github.com/explosion/spacy-models/releases/download/fr_core_news_sm-3.7.0/fr_core_news_sm-3.7.0-py3-none-any.whl
+
 
 # Other dependencies can be added here as needed
 
