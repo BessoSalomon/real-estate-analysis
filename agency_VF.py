@@ -11,19 +11,238 @@ from io import StringIO
 import random
 from pandas.tseries.offsets import QuarterEnd
 from plotly.subplots import make_subplots
+from pandas.tseries.offsets import QuarterEnd
+from plotly.subplots import make_subplots
+from PIL import Image  # Import PIL for handling images
+from sklearn.linear_model import LinearRegression
+
+
 
 # Streamlit configuration
 st.set_page_config(
     layout="wide",
-    page_title="🏠 Tableau de Bord d'Analyse de la Part de Marché Immobilière",
-    page_icon=":house:"
+    page_title="Century 21 Market Dashboard",
+    page_icon="century21_logo.ico",  # Use an ICO format for the favicon
+    initial_sidebar_state="expanded"
 )
-
-# Title of the application
-st.title("🏠 Tableau de Bord d'Analyse de la Part de Marché Immobilière")
 
 # Suppress warnings for cleaner output
 warnings.filterwarnings('ignore')
+
+
+st.markdown(
+    """
+    <style>
+    /* Global font style */
+    @import url('https://fonts.googleapis.com/css2?family=Century+Gothic&display=swap');
+    body {
+        font-family: 'Century Gothic', Arial, sans-serif;
+        background-color: #f9f9f9; /* Light background */
+    }
+
+    /* Title style */
+    h1 {
+        font-size: 36px;
+        font-weight: bold;
+        color: #343534; /* Dark color for text */
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    h2, h3 {
+        color: #343534; /* Dark secondary text */
+        font-weight: normal;
+    }
+
+    /* Sidebar style */
+    .sidebar .sidebar-content {
+        background-color: #b2a284; /* Light primary color */
+        padding: 15px;
+    }
+
+    /* Sidebar header */
+    .sidebar .sidebar-content h2 {
+        color: #343534; /* Dark text for sidebar headers */
+    }
+
+    /* Sidebar logo styling */
+    .sidebar img {
+        width: 180px;
+        margin-bottom: 10px;
+    }
+
+    /* Header style with logo */
+    .header {
+        position: sticky;
+        top: 0;
+        background-color: #ffffff;
+        z-index: 1000;
+        padding: 10px 0;
+        border-bottom: 2px solid #b2a284; /* Light primary border underline */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 30px;
+    }
+    .header img {
+        width: 250px;
+    }
+
+    /* Button styles */
+    .stButton>button {
+        background-color: #b2a284; /* Light primary color */
+        color: #ffffff;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 5px;
+        font-size: 16px;
+        transition: background-color 0.3s ease;
+    }
+    .stButton>button:hover {
+        background-color: #343534; /* Darker hover state */
+        color: #ffffff;
+    }
+
+    /* Multiselect selected tag styles */
+    .stMultiSelect [data-baseweb="tag"] {
+        background-color: #b2a284 !important; /* Update the tag background color */
+        color: white !important; /* Ensure the text is white for contrast */
+    }
+
+    .stMultiSelect .st-bs {
+        background-color: #b2a284 !important; /* Background for the selection box */
+        color: white !important;
+    }
+
+    /* Slider styles */
+    .stSlider>div>div {
+        background-color: transparent !important; /* Transparent slider background */
+    }
+    
+    .stSlider .css-1aumxhk {
+        background-color: #b2a284 !important; /* Light color for the slider handle */
+    }
+
+    /* Multiselect, dropdown, and date picker styles */
+    .stMultiSelect .st-multiselect .st-bn, .stSelectbox .st-bn, .stDateInput>div>input {
+        background-color: #b2a284 !important;
+        color: #ffffff !important;
+    }
+
+    /* Dataframe styling */
+    .dataframe tr, .dataframe td, .dataframe th {
+        border: none;
+        color: #343534;
+        font-size: 14px;
+    }
+    
+    /* Styled box for dynamic display */
+    .dynamic-box {
+        background-color: #f5f5f5;
+        border-radius: 10px;
+        padding: 15px;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 15px;
+    }
+
+    /* Text inside dynamic box */
+    .dynamic-box p {
+        color: #343534;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    /* Highlighted metrics in box */
+    .dynamic-box .highlight {
+        color: #b2a284; /* Light primary color for emphasis */
+        font-weight: bold;
+    }
+
+    /* Table styles */
+    .stTable tr {
+        background-color: transparent;  /* Remove table row background */
+    }
+
+    .stTable th {
+        background-color: transparent; /* Transparent table headers */
+        color: #343534; /* Dark text for table headers */
+        font-size: 16px;
+    }
+
+    .stTable td {
+        font-size: 14px;
+        color: #343534;
+    }
+
+    /* Chart titles and labels */
+    .stPlotlyChart .main-svg .plot-container .xtitle, .ytitle {
+        color: #343534 !important; /* Dark text on charts */
+    }
+
+    /* Dropdown selections styling */
+    .stSelectbox select {
+        background-color: #b2a284 !important;
+        color: #ffffff !important;
+        border: none;
+    }
+
+    /* Checkbox styling */
+    .stCheckbox input {
+        accent-color: #b2a284; /* Light color for checkboxes */
+    }
+
+    /* Hover styles for clickable elements */
+    .stButton>button, .stCheckbox label, .stMultiSelect .st-bn {
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .stButton>button:hover, .stMultiSelect .st-bn:hover {
+        background-color: #343534;
+        color: #ffffff;
+    }
+
+    /* Sidebar elements styling */
+    .sidebar .stSlider>div, .sidebar .stMultiSelect .st-bn, .sidebar .stCheckbox input {
+        background-color: #b2a284;
+        color: #ffffff;
+    }
+
+    /* Customize scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background-color: #b2a284;
+        border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background-color: #343534;
+    }
+    
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
+
+# Try using Streamlit's st.image() for logo display
+try:
+    logo = Image.open("Ever-One_RGB_C_GB.png")  # Ensure this is the correct path
+    st.image(logo, caption="", width=500)
+except FileNotFoundError:
+    st.error("L'image 'Ever-One_RGB_C_GB.png' est introuvable. Veuillez vérifier le chemin du fichier.")
+
+
+
+# Title of the application with Century 21 logo at the top
+st.markdown("""
+<div class="header">
+</div>
+<h1>🏠 Tableau de Bord d'Analyse de la Part de Marché Immobilière</h1>
+""", unsafe_allow_html=True)
 
 # --------------------------------------
 # Step 1: Load the agency data from Streamlit secrets
@@ -34,6 +253,17 @@ df_agency = pd.read_csv(StringIO(data))
 
 # Display the agency data for verification
 st.write(df_agency)
+
+# --------------------------------------
+# Display Logos and Images in Sidebar
+# --------------------------------------
+st.sidebar.header(" ")
+
+# Load and Display Logos in Sidebar with Consistent Sizing
+logo_century = Image.open('century_logo_clean.png')
+
+# Display the logos in the sidebar
+st.sidebar.image(logo_century, caption='Century 21', width=90)
 
 # --------------------------------------
 # Step 2: Data Loading with Delimiter Detection (Market Data)
@@ -74,12 +304,6 @@ def preprocess_data(df_market, df_agency):
     df_market.columns = df_market.columns.str.strip().str.lower()
     df_agency.columns = df_agency.columns.str.strip().str.lower()
 
-    # Sidebar to display column names for verification
-    st.sidebar.header("📋 Colonnes des Données")
-    st.sidebar.subheader("Données du Marché :")
-    st.sidebar.write(df_market.columns.tolist())
-    st.sidebar.subheader("Données de l'Agence :")
-    st.sidebar.write(df_agency.columns.tolist())
 
     # Market Data Preprocessing
     if 'date' in df_market.columns:
@@ -130,7 +354,7 @@ def preprocess_data(df_market, df_agency):
     if 'date de transaction' in df_agency.columns:
         df_agency['date'] = pd.to_datetime(df_agency['date de transaction'], errors='coerce', dayfirst=True)
     else:
-        st.error("Colonne 'date de transaction' non trouvée dans les données de l'agence.")
+        st.error("Colonne 'date de transaction' non trouvée dans 'my_agency_data.csv'.")
         st.stop()
 
     df_agency['year'] = df_agency['date'].dt.year
@@ -142,10 +366,10 @@ def preprocess_data(df_market, df_agency):
         try:
             df_agency[['latitude', 'longitude']] = df_agency['map'].str.strip().str.split(',', expand=True).astype(float)
         except Exception as e:
-            st.error(f"Erreur lors du traitement de la colonne 'map' dans les données de l'agence : {e}")
+            st.error(f"Erreur lors du traitement de la colonne 'map' dans 'my_agency_data.csv' : {e}")
             st.stop()
     else:
-        st.error("Colonne 'map' non trouvée dans les données de l'agence.")
+        st.error("Colonne 'map' non trouvée dans 'my_agency_data.csv'.")
         st.stop()
 
     # Assuming each row is a transaction; set 'nombre de ventes' to 1
@@ -155,7 +379,7 @@ def preprocess_data(df_market, df_agency):
     if 'communes' in df_agency.columns:
         df_agency.rename(columns={'communes': 'commune'}, inplace=True)
     else:
-        st.error("Colonne 'communes' non trouvée dans les données de l'agence.")
+        st.error("Colonne 'communes' non trouvée dans 'my_agency_data.csv'.")
         st.stop()
 
     # Drop rows where 'commune' is missing
@@ -163,7 +387,7 @@ def preprocess_data(df_market, df_agency):
         df_agency.dropna(subset=['commune'], inplace=True)
         df_agency.reset_index(drop=True, inplace=True)
     else:
-        st.error("Colonne 'commune' non trouvée dans les données de l'agence.")
+        st.error("Colonne 'commune' non trouvée dans 'my_agency_data.csv'.")
         st.stop()
 
     # Merge geographic data if missing in agency data
@@ -183,36 +407,124 @@ def preprocess_data(df_market, df_agency):
 
     return df_market, df_agency
 
-# Preprocess the data
 df_market, df_agency = preprocess_data(df_market, df_agency)
-
-# --------------------------------------
-# Now continue with the rest of your analysis and visualization steps...
-# --------------------------------------
 
 # --------------------------------------
 # Step 4: Sidebar Filters for Interactivity
 # --------------------------------------
+# Sidebar Header and Filters
 st.sidebar.header("📊 Filtres")
 
-# Date Range Filter
+# Function to generate unique keys
+def generate_key(*args):
+    """Generates a unique key based on the provided arguments."""
+    return "_".join(map(str, args))
+
+st.markdown(
+    """
+    <style>
+    /* Custom styles for sidebar section */
+    .sidebar .sidebar-content {
+        background-color: #343534 !important; /* Darker color for the entire sidebar */
+        color: #ffffff !important; /* White text for better contrast */
+    }
+
+    /* Remove background from sliders */
+    .stSlider > div > div {
+        background-color: transparent !important; /* Transparent background for the slider */
+    }
+
+    /* Style for the slider handle and track */
+    .stSlider .css-1aumxhk {
+        background-color: #b2a284 !important; /* Light color for the slider handle */
+    }
+    
+    /* Multiselect and dropdown style */
+    .stMultiSelect .st-multiselect .st-bn, .stSelectbox .st-bn {
+        background-color: #b2a284 !important; /* Light color for dropdowns */
+        color: #ffffff !important; /* White text */
+    }
+
+    /* Checkbox styling */
+    .stCheckbox input {
+        accent-color: #b2a284; /* Light color for checkboxes */
+    }
+
+    /* Expander headers */
+    .streamlit-expanderHeader {
+        background-color: #b2a284 !important; /* Light background for expanders */
+        color: #343534 !important; /* Dark text */
+    }
+
+    /* General sidebar font and text styling */
+    .sidebar-content {
+        color: #ffffff !important; /* White text for sidebar content */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# Date Range Filter without background color on the slider
 min_year = int(min(df_market['year'].min(), df_agency['year'].min()))
 max_year = int(max(df_market['year'].max(), df_agency['year'].max()))
-selected_years = st.sidebar.slider("Sélectionner l'intervalle de dates", min_year, max_year, (min_year, max_year))
+selected_years = st.sidebar.slider(
+    "Sélectionner l'intervalle de dates", 
+    min_year, max_year, (min_year, max_year)
+)
 
-# Commune Selection
-communes = sorted(df_market['commune'].unique())
-selected_communes = st.sidebar.multiselect("Sélectionner les Communes", communes, default=communes)
+# Toggle for commune filter inside expander
+with st.sidebar.expander("Sélectionner les Communes", expanded=False):  # Default to collapsed
+    # Get list of all communes and communes where the agency has sold
+    all_communes = sorted(df_market['commune'].unique())
+    agency_communes = sorted(df_agency['commune'].unique())
+    
+    # Checkboxes to control commune selection
+    select_all_communes = st.checkbox("Toutes les communes", value=True, key=generate_key('communes', 'all'))
+    select_agency_communes = st.checkbox("Mes communes", value=False, key=generate_key('communes', 'agency'))
+    
+    # Logic to display relevant communes
+    if select_agency_communes and not select_all_communes:
+        selected_communes = st.multiselect("Communes Disponibles", agency_communes, default=agency_communes)
+    elif select_all_communes:
+        selected_communes = st.multiselect("Communes Disponibles", all_communes, default=all_communes)
+    else:
+        selected_communes = st.multiselect("Communes Disponibles", all_communes, default=[])
 
-# Building Type Filter
-if 'type de bâtiment' in df_market.columns:
-    building_types = sorted(df_market['type de bâtiment'].dropna().unique())
-    selected_building_types = st.sidebar.multiselect("Sélectionner les types de bâtiments", building_types, default=building_types)
-else:
-    st.error("Colonne 'type de bâtiment' non trouvée dans 'all_cities_belgium.csv'.")
-    st.stop()
+# Toggle for building type filter inside expander
+with st.sidebar.expander("Sélectionner les types de bâtiments", expanded=False):  # Default to collapsed
+    if 'type de bâtiment' in df_market.columns:
+        building_types = sorted(df_market['type de bâtiment'].dropna().unique())
+        selected_building_types = st.multiselect("Types de bâtiments Disponibles", building_types, default=building_types)
+    else:
+        st.error("Colonne 'type de bâtiment' non trouvée dans 'all_cities_belgium.csv'.")
+        st.stop()
 
-# Apply Filters
+# Separate expanders for column names of "Données du Marché" and "Données de l'Agence"
+with st.sidebar.expander("📋 Colonnes des Données", expanded=False):
+    # Données du Marché
+    st.write("### Données du Marché :")
+    st.write([
+        "province",
+        "arrondissement",
+        "commune",
+        "type de bâtiment",
+        "map",
+        "date",
+        "nombre de ventes",
+        "prix médian"
+    ])
+    
+    # Données de l'Agence
+    st.write("### Données de l'Agence :")
+    st.write([
+        "agence",
+        "date de transaction",
+        "communes",
+        "map"
+    ])
+
+# Apply Filters to both market and agency data based on selections
 df_market_filtered = df_market[
     (df_market['year'] >= selected_years[0]) &
     (df_market['year'] <= selected_years[1]) &
@@ -225,8 +537,6 @@ df_agency_filtered = df_agency[
     (df_agency['year'] <= selected_years[1]) &
     (df_agency['commune'].isin(selected_communes))
 ]
-
-
 
 
 # --------------------------------------
@@ -256,15 +566,16 @@ market_share['date'] = pd.to_datetime(market_share['year'].astype(str) + '-Q' + 
 market_share.sort_values('date', inplace=True)
 
 
+
+
+
 # --------------------------------------
 # Step 1: Ventes de l'Agence par Commune et Trimestre
 # --------------------------------------
-st.header("1. Ventes de l'Agence par Commune et Trimestre")
+st.header("1. Part de chaque Commune dans les ventes de l'agence par Trimestre")
 
 # Filtrer les communes où l'agence a vendu des biens
 sold_communes = df_agency_filtered['commune'].unique()
-
-# Filtrer les données de l'agence pour les ventes dans les communes vendues
 df_agency_sold_communes = df_agency_filtered[df_agency_filtered['commune'].isin(sold_communes)]
 
 # Récupérer la première date de vente
@@ -312,124 +623,168 @@ sales_percentage_table = total_agency_sales.pivot_table(
 # Trier par commune pour une meilleure lisibilité
 sales_percentage_table = sales_percentage_table.sort_index()
 
-# Fonction pour appliquer un gradient de vert
+# Function to apply a green gradient
 def apply_green_gradient(data):
     styles = pd.DataFrame('', index=data.index, columns=data.columns)
 
-    # Normaliser les données pour une couleur entre blanc et vert
-    max_value = data.max().max()  # Trouver la valeur max pour normaliser
+    # Normalize the data for coloring
+    max_value = data.max().max()  # Find the max value to normalize
     for column in data.columns:
         for index in data.index:
             value = data.loc[index, column]
-            green_shade = int((value / max_value) * 255)  # Échelle de couleur
-            styles.at[index, column] = f'background-color: rgb({255 - green_shade}, 255, {255 - green_shade})'
+            if max_value != 0:
+                green_shade = int((value / max_value) * 255)  # Color scale
+                styles.at[index, column] = f'background-color: rgb({255 - green_shade}, 255, {255 - green_shade})'
+            else:
+                styles.at[index, column] = 'background-color: rgb(255, 255, 255)'
 
     return styles
 
-# Appliquer le gradient sur le tableau des pourcentages de ventes
-styled_sales_percentage_table = sales_percentage_table.style.apply(apply_green_gradient, axis=None) \
-                                                            .format("{:.2f}%")
+# Apply the gradient on the sales percentage table
+styled_sales_percentage_table = sales_percentage_table.style.apply(apply_green_gradient, axis=None).format("{:.2f}%")
 
-# Afficher la table dans Streamlit
+# Display the table in Streamlit
 st.dataframe(styled_sales_percentage_table, use_container_width=True)
 
-## --------------------------------------
+# --------------------------------------
+# Unified Analysis Section for Selected Communes
+# --------------------------------------
+
+# Define historically important communes (based on the average sales percentage)
+historically_important_communes = sales_percentage_table.mean(axis=1).sort_values(ascending=False)
+historically_important_communes = historically_important_communes[historically_important_communes > 10].index.tolist()
+
+# Generate analysis for historically important communes
+analysis_text = "### Aperçu Global des Communes Significatives :\n\n"
+
+for commune in historically_important_communes:
+    # Metrics for each commune
+    last_quarter = sales_percentage_table.loc[commune].iloc[-1]
+    second_last_quarter = sales_percentage_table.loc[commune].iloc[-2]
+    average_sales = sales_percentage_table.loc[commune].mean()
+    trend = last_quarter - second_last_quarter
+    volatility = sales_percentage_table.loc[commune].std()
+
+    # Compact and Fluid Insights Generation
+    analysis_text += f"**{commune}** : "
+
+    # Historique et Importance
+    if average_sales > 15:
+        analysis_text += f"Historiquement très importante ({average_sales:.2f}%). "
+    elif average_sales > 10:
+        analysis_text += f"Importance notable ({average_sales:.2f}%). "
+
+    # Tendance des deux derniers trimestres
+    if trend > 2:
+        analysis_text += f"Augmentation notable de {trend:.2f}%, opportunité à exploiter. "
+    elif 0 < trend <= 2:
+        analysis_text += f"Légère augmentation ({trend:.2f}%), progression à surveiller. "
+    elif -2 < trend < 0:
+        analysis_text += f"Légère baisse ({abs(trend):.2f}%), variation normale. "
+    elif trend <= -2:
+        analysis_text += f"Baisse marquée de {abs(trend):.2f}%, réévaluation nécessaire. "
+
+    # Volatilité
+    if volatility > 10:
+        analysis_text += "Volatilité élevée, conditions instables à surveiller. "
+    elif volatility > 5:
+        analysis_text += "Volatilité modérée. "
+    
+    # Stratégie et alignement
+    if trend < 0 and average_sales > 10:
+        analysis_text += "  "
+
+    # Add line break for readability
+    analysis_text += "\n"
+
+# Ajouter les changements significatifs dans les autres communes (uniquement les grandes variations)
+significant_changes = []
+
+# Calcul des changements significatifs dans d'autres communes
+for commune in sales_percentage_table.index:
+    if commune not in historically_important_communes:
+        last_quarter = sales_percentage_table.loc[commune].iloc[-1]
+        second_last_quarter = sales_percentage_table.loc[commune].iloc[-2]
+        change = last_quarter - second_last_quarter
+        if abs(change) > 5:  # Seuil pour les changements importants
+            significant_changes.append((commune, change))
+
+if significant_changes:
+    analysis_text += "### Changements Significatifs dans d'Autres Communes :\n\n"
+    for commune, change in significant_changes:
+        if change > 0:
+            analysis_text += f"- **{commune}** : Augmentation de {change:.2f}%, potentiel à exploiter. "
+        else:
+            analysis_text += f"- **{commune}** : Diminution de {abs(change):.2f}%, réévaluation nécessaire. "
+
+# Affichage dans Streamlit
+st.markdown(analysis_text, unsafe_allow_html=True)
+
+
+# --------------------------------------
 # Step 2: Répartition en Pourcentage des Ventes par Commune au Dernier Trimestre
 # --------------------------------------
 st.header("2. Répartition en Pourcentage des Ventes par Commune au Dernier Trimestre")
 
-# Convertir la colonne 'date' en datetime si nécessaire
+# Convert 'date' column to datetime if necessary
 df_agency_filtered['date'] = pd.to_datetime(df_agency_filtered['date'])
 
-# Extraire l'année et le trimestre de la date
-df_agency_filtered['year'] = df_agency_filtered['date'].dt.year
-df_agency_filtered['quarter'] = df_agency_filtered['date'].dt.quarter
-
-# Obtenir l'année et le trimestre les plus récents dans les données
+# Extract the latest year and quarter
 latest_year = df_agency_filtered['year'].max()
 latest_quarter = df_agency_filtered[df_agency_filtered['year'] == latest_year]['quarter'].max()
 
-# Filtrer les données pour le dernier trimestre
+# Filter data for the last quarter
 df_last_quarter = df_agency_filtered[
     (df_agency_filtered['year'] == latest_year) &
     (df_agency_filtered['quarter'] == latest_quarter)
 ]
 
-# Vérifier si des données sont disponibles pour le dernier trimestre
+# Check if data is available for the last quarter
 if df_last_quarter.empty:
     st.warning("Aucune donnée disponible pour le dernier trimestre.")
 else:
-    # Agréger les ventes totales de l'agence par commune pour le dernier trimestre
+    # Aggregate total sales by commune for the last quarter
     sales_by_commune = df_last_quarter.groupby('commune').agg(
         total_sales=('nombre de ventes', 'sum')
     ).reset_index()
 
-    # Calculer le total des ventes
+    # Calculate total sales
     total_sales = sales_by_commune['total_sales'].sum()
 
-    # Calculer le pourcentage de ventes par commune
+    # Calculate sales percentage by commune
     sales_by_commune['sales_percentage'] = (sales_by_commune['total_sales'] / total_sales) * 100
 
-    # Créer le graphique en camembert
+    # Create pie chart
     fig_pie = px.pie(
         sales_by_commune,
         values='sales_percentage',
         names='commune',
         title=f"Répartition en Pourcentage des Ventes par Commune - {latest_year} T{latest_quarter}",
         hover_data=['total_sales'],
-        labels={'total_sales': 'Nombre de Ventes', 'sales_percentage': 'Pourcentage des Ventes'}
+        labels={'total_sales': 'Nombre de Ventes', 'sales_percentage': 'Pourcentage des Ventes'},
+        color_discrete_sequence=px.colors.sequential.Greens
     )
     fig_pie.update_traces(textposition='inside', textinfo='percent+label')
 
-    # Afficher le graphique dans Streamlit
+    # Display the chart in Streamlit
     st.plotly_chart(fig_pie, use_container_width=True)
 
-    # Analyse dynamique des données
-    st.markdown("### Analyse et Implications Stratégiques")
-
-    # Identifier les communes avec les plus fortes contributions
+    # Identify communes with the highest contributions
     top_communes = sales_by_commune.sort_values('sales_percentage', ascending=False).head(3)
     top_communes_list = top_communes['commune'].tolist()
 
-    # Générer une analyse dynamique
-    if top_communes_list:
-        st.markdown(f"Les communes avec les plus fortes contributions aux ventes du dernier trimestre sont : **{', '.join(top_communes_list)}**. Cela indique que ces zones sont particulièrement actives et pourraient offrir des opportunités pour renforcer davantage notre présence.")
 
-    # Recommandations stratégiques
-    st.markdown("### Recommandations Stratégiques")
-
-    st.markdown("""
-    - **Capitaliser sur les Communes Performantes** : Continuer à investir dans les communes les plus performantes pour consolider notre position dominante.
-    - **Explorer les Opportunités dans les Communes Sous-Représentées** : Pour les communes avec une faible part de ventes, envisager des stratégies pour augmenter la visibilité et attirer de nouveaux clients.
-    - **Analyser les Facteurs de Succès** : Comprendre ce qui fonctionne dans les communes performantes (marketing, relations clients, offres spéciales) et appliquer ces stratégies à d'autres zones.
-    """)
-
-    # Transparence pour solliciter des retours des parties prenantes
-    st.markdown("### Transparence : Retour et Discussions")
-
-    st.markdown(f"""
-    Ce camembert nous permet de visualiser la répartition des ventes par commune pour le dernier trimestre ({latest_year} T{latest_quarter}). Il est crucial de comprendre pourquoi certaines communes performent mieux que d'autres.
-
-    - **Questions à considérer** :
-        - Les communes les plus performantes bénéficient-elles de campagnes marketing spécifiques ?
-        - Y a-t-il des facteurs externes (économiques, démographiques) qui influencent ces résultats ?
-        - Comment pouvons-nous reproduire le succès de ces communes dans d'autres zones ?
-
-    Vos retours et observations sont essentiels pour ajuster nos stratégies et maximiser notre performance sur l'ensemble du territoire.
-    """)
 
 
 # --------------------------------------
-# Section 14: Évolution de la Part de Marché par Commune
+# Step 14: Évolution de la Part de Marché par Commune
 # --------------------------------------
-
 
 st.header("14. Évolution de la Part de Marché par Commune")
 
 # Question stratégique
 st.markdown("""
-### Question Clé : **Comment nos ventes évoluent-t-elles dans chaque commune par rapport au marché au fil du temps ?**
-Cette analyse vise à comprendre **dans quelle mesure** nos ventes et notre part de marché changent dans chaque commune, afin de guider nos décisions stratégiques.
+**Comment nos ventes évoluent-elles dans chaque commune par rapport au marché au fil du temps ?**
 """)
 
 # Étape 1: Filtrer les données à partir du premier trimestre de vente de l'agence
@@ -449,19 +804,35 @@ if market_share_filtered.empty:
     st.warning("Aucune donnée disponible après le premier trimestre de vente de l'agence.")
     st.stop()
 
-# Étape 2: Sélectionner les Top N communes
-top_n = st.slider("Sélectionner le nombre de communes à afficher", min_value=1, max_value=10, value=6)
-top_communes = market_share_filtered.groupby('commune')['nombre de ventes_agency'].sum().sort_values(ascending=False).head(top_n).index.tolist()
+# Étape 2: Calculer la part de marché totale pour chaque commune
+market_share_filtered['Part_de_Marche_Totale (%)'] = (market_share_filtered['nombre de ventes_agency'] / market_share_filtered['nombre de ventes_market']) * 100
 
-st.write(f"**Communes sélectionnées :** {', '.join(top_communes)}")
+# Remplacer les NaN et les valeurs infinies
+market_share_filtered['Part_de_Marche_Totale (%)'] = market_share_filtered['Part_de_Marche_Totale (%)'].replace([np.inf, -np.inf], 0).fillna(0)
 
-filtered_sales = market_share_filtered[market_share_filtered['commune'].isin(top_communes)].copy()
+# Obtenir les 5 communes avec la part de marché totale la plus élevée
+top_communes_by_market_share = market_share_filtered.groupby('commune')['Part_de_Marche_Totale (%)'].mean().sort_values(ascending=False).head(5).index.tolist()
 
-if filtered_sales.empty:
-    st.warning("Aucune donnée disponible pour les communes sélectionnées.")
+# Obtenir la liste des communes où l'agence a déjà vendu des biens
+communes_with_sales = market_share_filtered.loc[market_share_filtered['nombre de ventes_agency'] > 0, 'commune'].unique().tolist()
+communes_with_sales.sort()
+
+# Créer une boîte de sélection pour que l'utilisateur puisse choisir les communes
+selected_communes = st.multiselect(
+    "Sélectionnez les communes à afficher",
+    options=communes_with_sales,
+    default=top_communes_by_market_share,
+    key=generate_key('step14', 'communes_select')
+)
+
+if not selected_communes:
+    st.warning("Veuillez sélectionner au moins une commune pour afficher les données.")
     st.stop()
+else:
+    st.write(f" {' '}")
 
 # Étape 3: Préparer les données pour les graphiques
+filtered_sales = market_share_filtered[market_share_filtered['commune'].isin(selected_communes)].copy()
 filtered_sales['date_label'] = filtered_sales.apply(lambda row: f"{row['year']} T{row['quarter']}", axis=1)
 
 # Vérifier les colonnes nécessaires
@@ -485,7 +856,7 @@ outperforming_communes = []
 underperforming_communes = []
 matching_communes = []
 
-for commune in top_communes:
+for commune in selected_communes:
     commune_data = filtered_sales[filtered_sales['commune'] == commune].sort_values('date')
     if len(commune_data) >= 2:
         last_quarter_agence = commune_data.iloc[-1]['variation_agence']
@@ -527,24 +898,29 @@ fig_line = px.line(
     markers=True,
     title='Évolution des Ventes Agence vs Marché par Commune',
     labels={'date_label': 'Trimestre', 'Ventes': 'Nombre de Ventes'},
-    height=250 * (top_n // 2 + top_n % 2)  # Ajuster la hauteur en fonction du nombre de facettes
+    height=250 * (len(selected_communes) // 2 + len(selected_communes) % 2),  # Ajuster la hauteur en fonction du nombre de facettes
+    color_discrete_map={
+        'Ventes Agence': '#D4A437',  # Century 21 Gold
+        'Ventes Marché': '#3B3B3B'   # Century 21 Dark Gray
+    }
 )
 
 fig_line.update_layout(
     hovermode='x unified',
     legend_title='Type de Ventes',
-    margin=dict(l=20, r=20, t=50, b=20)
+    margin=dict(l=20, r=20, t=50, b=20),
+    font=dict(
+        family='Century Gothic',
+        size=12,
+        color='#3B3B3B'
+    )
 )
 
-st.plotly_chart(fig_line, use_container_width=True)
+st.plotly_chart(fig_line, use_container_width=True, key=generate_key('step14', 'line_chart'))
 
-
-# Étape 7: Analyse et Recommandations
+# Étape 6: Analyse et Recommandations
 st.markdown("""
 ### Analyse et Implications Stratégiques :
-- **Performance Supérieure au Marché** : Indique où nos stratégies fonctionnent bien.
-- **Performance Inférieure au Marché** : Signale des domaines nécessitant une attention ou des ajustements.
-- **Performance Alignée avec le Marché** : Représente des zones de stabilité et des opportunités potentielles de croissance.
 """)
 
 if outperforming_communes:
@@ -559,85 +935,62 @@ if matching_communes:
     communes_list = ', '.join([f"**{c}**" for c in matching_communes])
     st.markdown(f"- **Performance Alignée avec le Marché** : Les communes {communes_list} maintiennent une croissance des ventes similaire à celle du marché, ce qui indique une stabilité dans nos opérations.\n")
 
-# Recommandations stratégiques
-st.markdown("### Recommandations Stratégiques :")
 
-recommendations_outperforming = [
-    "🔝 **Capitaliser sur le Succès** : Continuez à investir dans la commune {commune} pour maintenir et renforcer notre position dominante.",
-    "🚀 **Renforcer les Stratégies Gagnantes** : Poursuivez les initiatives actuelles dans la commune {commune} qui montrent une forte croissance.",
-    "🌟 **Maximiser les Opportunités** : Exploitez la dynamique positive dans la commune {commune} en augmentant notre présence et nos actions marketing.",
-    "📈 **Soutenir la Croissance** : Maintenez et développez nos efforts dans la commune {commune} pour capitaliser sur cette tendance ascendante.",
-    "💼 **Renforcer l'Engagement Local** : Intensifiez nos actions dans la commune {commune} pour consolider notre succès et attirer davantage de clients."
-]
-
-recommendations_underperforming = [
-    "⚠️ **Réévaluer les Stratégies** : Analysez les causes de la sous-performance dans la commune {commune} et ajustez nos approches marketing et commerciales.",
-    "🔍 **Investiguer les Défis** : Identifiez les obstacles dans la commune {commune} et développez des plans d'action ciblés pour inverser la tendance.",
-    "📉 **Stimuler la Croissance** : Implémentez des initiatives spécifiques dans la commune {commune} pour améliorer notre part de marché.",
-    "🛠️ **Adapter les Approches** : Révisez nos stratégies dans la commune {commune} pour mieux répondre aux besoins et attentes du marché local.",
-    "📊 **Optimiser les Efforts** : Renforcez notre présence et nos campagnes dans la commune {commune} pour remédier à la baisse observée."
-]
-
-recommendations_matching = [
-    "🔄 **Maintenir la Stabilité** : Continuez les efforts actuels dans la commune {commune} pour conserver notre position alignée avec le marché.",
-    "🛠️ **Optimiser les Processus** : Identifiez des moyens d'améliorer encore nos opérations dans la commune {commune} pour stimuler une croissance future.",
-    "💡 **Explorer de Nouvelles Opportunités** : Cherchez des initiatives innovantes dans la commune {commune} pour dépasser les performances du marché.",
-    "📈 **Stimuler la Croissance** : Introduisez de nouvelles stratégies dans la commune {commune} pour dynamiser davantage notre part de marché.",
-    "🌱 **Développer de Nouvelles Initiatives** : Lancez des projets spécifiques dans la commune {commune} pour encourager une croissance continue."
-]
 
 def add_recommendations(communes, recommendations_list):
     for commune in communes:
-        recommendation = np.random.choice(recommendations_list).format(commune=commune)
+        recommendation = random.choice(recommendations_list).format(commune=commune)
         st.markdown(f"- {recommendation}")
 
-add_recommendations(outperforming_communes, recommendations_outperforming)
-add_recommendations(underperforming_communes, recommendations_underperforming)
-add_recommendations(matching_communes, recommendations_matching)
-
-# Transparence et Sollicitation de Retours
-st.markdown("""
-### Transparence : Retour et Discussions
-Cette section analyse l'évolution de notre part de marché par commune par rapport au marché au fil du temps. Les tendances observées indiquent où nous excellons et où des améliorations sont nécessaires.
-
-- **Questions à considérer** :
-    - Dans les communes où nous surperformons, quelles stratégies spécifiques ont conduit à cette croissance ?
-    - Pour les communes en sous-performance, quels facteurs externes ou internes pourraient être responsables ?
-    - Comment pouvons-nous adapter nos stratégies pour mieux aligner notre croissance avec celle du marché ?
-
-**Action Demandée** : Veuillez fournir vos retours et observations pour affiner nos stratégies et maximiser notre impact sur le marché.
-""")
-
 
 # --------------------------------------
-# Step 0: Visualizations with Unique Keys
+# Step 2.bis: Part de Marché dans le Temps par Commune (Graphique en Lignes)
 # --------------------------------------
 
-# Function to generate unique keys
-def generate_key(*args):
-    return "_".join(map(str, args))
-
-
-# --------------------------------------
-# Step 2. Part de Marché dans le Temps par Commune (Graphique en Lignes)
-# --------------------------------------
-st.header("2. Part de Marché dans le Temps par Commune")
+st.header("2.bis Part de Marché dans le Temps par Commune")
 
 # Question stratégique pour guider cette section
-st.markdown("### Question Clé : Comment la performance de notre agence évolue-t-elle dans les principales communes au fil du temps ?")
+st.markdown("Comment la performance de notre agence évolue-t-elle dans les principales communes au fil du temps ?")
 
 # Déterminer la date où l'agence a réalisé sa première vente
 first_sale_date = df_agency['date'].min()
 
 # Filtrer les données à partir de la date de la première vente de l'agence
-market_share_filtered = market_share[market_share['date'] >= first_sale_date]
+market_share_filtered = market_share[market_share['date'] >= first_sale_date].copy()
 
-# Sélection du nombre de communes à afficher
-top_n = st.slider("Sélectionner les N meilleures Communes à afficher", min_value=1, max_value=20, value=5)
-top_communes_over_time = market_share_filtered.groupby('commune')['market_share (%)'].mean().sort_values(ascending=False).head(top_n).index.tolist()
+# Étape pour calculer la part de marché totale par commune (pour définir les communes par défaut)
+total_market_share_per_commune = market_share_filtered.groupby('commune').agg(
+    Ventes_Agence=('nombre de ventes_agency', 'sum'),
+    Ventes_Marché=('nombre de ventes_market', 'sum')
+).reset_index()
+
+total_market_share_per_commune['Part_de_Marche_Totale (%)'] = (total_market_share_per_commune['Ventes_Agence'] / total_market_share_per_commune['Ventes_Marché']) * 100
+
+# Trier les communes par la part de marché totale décroissante
+top_communes_by_market_share = total_market_share_per_commune.sort_values('Part_de_Marche_Totale (%)', ascending=False).head(5)['commune'].tolist()
+
+# Obtenir la liste des communes où l'agence a déjà vendu des biens
+communes_with_sales = market_share_filtered.loc[market_share_filtered['nombre de ventes_agency'] > 0, 'commune'].unique().tolist()
+communes_with_sales.sort()
+
+# Créer une boîte de sélection pour que l'utilisateur puisse choisir les communes
+selected_communes = st.multiselect(
+    "Sélectionnez les communes à afficher",
+    options=communes_with_sales,
+    default=top_communes_by_market_share,  # Par défaut, les 5 communes avec la plus haute part de marché
+    key=generate_key('step2bis', 'communes_select')
+)
+
+if not selected_communes:
+    st.warning("Veuillez sélectionner au moins une commune pour afficher les données.")
+    st.stop()
 
 # Filtrer les données pour les communes sélectionnées
-market_share_top_n = market_share_filtered[market_share_filtered['commune'].isin(top_communes_over_time)]
+market_share_top_n = market_share_filtered[market_share_filtered['commune'].isin(selected_communes)].copy()
+
+if market_share_top_n.empty:
+    st.warning("Aucune donnée disponible pour les communes sélectionnées.")
+    st.stop()
 
 # Création du graphique en lignes pour la part de marché dans le temps
 fig_market_share_time = px.line(
@@ -646,25 +999,36 @@ fig_market_share_time = px.line(
     y='market_share (%)',
     color='commune',
     markers=True,
-    title='Évolution de la Part de Marché dans les Communes Principales (Depuis la Première Vente de l’Agence)',
-    labels={'date': 'Date', 'market_share (%)': 'Part de Marché (%)', 'commune': 'Commune'}
+    title='Évolution de la Part de Marché dans les Communes Sélectionnées (Depuis la Première Vente de l’Agence)',
+    labels={'date': 'Date', 'market_share (%)': 'Part de Marché (%)', 'commune': 'Commune'},
+    color_discrete_sequence=px.colors.qualitative.Dark24
 )
 
 # Ajouter des annotations pour les pics significatifs
-for commune in top_communes_over_time:
+for commune in selected_communes:
     commune_data = market_share_top_n[market_share_top_n['commune'] == commune]
-    max_share = commune_data['market_share (%)'].max()
-    max_date = commune_data[commune_data['market_share (%)'] == max_share]['date'].iloc[0]
-    fig_market_share_time.add_annotation(
-        x=max_date,
-        y=max_share,
-        text=f"Pic à {commune}",
-        showarrow=True,
-        arrowhead=1
-    )
+    if not commune_data.empty:
+        max_share = commune_data['market_share (%)'].max()
+        max_date = commune_data[commune_data['market_share (%)'] == max_share]['date'].iloc[0]
+        fig_market_share_time.add_annotation(
+            x=max_date,
+            y=max_share,
+            text=f"Pic à {commune}",
+            showarrow=True,
+            arrowhead=1
+        )
 
 # Affichage du graphique dans Streamlit
-st.plotly_chart(fig_market_share_time, use_container_width=True, key=generate_key('step6', 'market_share_over_time', 'line'))
+fig_market_share_time.update_layout(
+    hovermode='x unified',
+    font=dict(
+        family='Century Gothic',
+        size=12,
+        color='#3B3B3B'
+    )
+)
+
+st.plotly_chart(fig_market_share_time, use_container_width=True, key=generate_key('step2bis', 'market_share_over_time_line'))
 
 # --------------------------------------
 # Analyse dynamique des tendances par commune
@@ -679,7 +1043,7 @@ stable_communes = []
 trend_threshold = 0.05  # 5% de changement en part de marché
 
 # Analyser chaque commune
-for commune in top_communes_over_time:
+for commune in selected_communes:
     commune_data = market_share_top_n[market_share_top_n['commune'] == commune].sort_values('date')
     if len(commune_data) >= 2:
         first_share = commune_data.iloc[0]['market_share (%)']
@@ -717,268 +1081,47 @@ if stable_communes:
 # Afficher l'analyse
 st.markdown(analysis_text)
 
-# Recommandations stratégiques pour pousser à l'action
-st.markdown("""### Recommandations Stratégiques :
-- **Capitaliser sur la Croissance** : Pour les communes en croissance, continuez à investir et à renforcer les stratégies qui portent leurs fruits.
-- **Réagir aux Baisses** : Pour les communes en baisse, identifiez les causes possibles et envisagez des actions ciblées pour inverser la tendance.
-- **Exploiter la Stabilité** : Pour les communes stables, explorez des opportunités pour stimuler la croissance ou consolider votre position.
-""")
 
-# Transparence pour solliciter des retours des parties prenantes
-feedback_text = "### Transparence : Retour et Discussions\n"
-feedback_text += "Cet aperçu montre l'évolution de la part de marché de notre agence dans les principales communes. "
 
-if increasing_communes:
-    communes_list = ', '.join([f"**{c}**" for c in increasing_communes])
-    feedback_text += f"Des communes comme {communes_list} affichent une progression notable – devrions-nous continuer à investir ici ou diversifier nos efforts ? "
 
-if decreasing_communes:
-    communes_list = ', '.join([f"**{c}**" for c in decreasing_communes])
-    feedback_text += f"Les baisses à {communes_list} sont préoccupantes — devrions-nous explorer plus en détail ce qui se passe et adapter nos stratégies ? "
-
-if stable_communes:
-    communes_list = ', '.join([f"**{c}**" for c in stable_communes])
-    feedback_text += f"Les communes {communes_list} montrent une stabilité – existe-t-il des opportunités pour stimuler davantage la croissance ? "
-
-feedback_text += "\nVos retours sont essentiels pour ajuster nos prochaines actions."
-
-st.markdown(feedback_text)
 
 
 # --------------------------------------
-# Step 3: Part de Marché Trimestrielle par Commune
-# --------------------------------------
-st.header("3. Part de Marché Trimestrielle par Commune")
-
-# Question commerciale guidant la section
-st.markdown("### Question Clé : Quels trimestres et quelles communes affichent les meilleures performances en termes de part de marché, et comment pouvons-nous exploiter ces informations pour renforcer notre position sur le marché ?")
-
-# Calculer la part de marché moyenne par commune et trimestre
-market_share_quarterly = market_share.groupby(['commune', 'year', 'quarter']).agg({'market_share (%)': 'mean'}).reset_index()
-market_share_quarterly['date'] = pd.to_datetime(market_share_quarterly['year'].astype(str) + '-Q' + market_share_quarterly['quarter'].astype(str))
-
-# Identifier les trimestres les plus récents
-latest_quarters = market_share_quarterly['date'].drop_duplicates().sort_values(ascending=False).head(4)
-
-# Filtrer les données pour les 4 derniers trimestres
-recent_market_share = market_share_quarterly[market_share_quarterly['date'].isin(latest_quarters)]
-
-# Calculer la part de marché moyenne sur les 4 derniers trimestres par commune
-average_market_share = recent_market_share.groupby('commune').agg({'market_share (%)': 'mean'}).reset_index()
-average_market_share = average_market_share.sort_values('market_share (%)', ascending=False)
-
-# Identifier les communes avec la meilleure part de marché moyenne
-top_communes = average_market_share.head(7)['commune'].tolist()
-
-# Filtrer les données pour les communes les plus performantes
-top_communes_data = recent_market_share[recent_market_share['commune'].isin(top_communes)]
-
-# Créer des étiquettes pour les trimestres
-top_communes_data['quarter_label'] = top_communes_data['year'].astype(str) + " T" + top_communes_data['quarter'].astype(str)
-
-# Simplifier la visualisation : Afficher un graphique compact
-fig_market_share = px.bar(
-    top_communes_data,
-    x='commune',
-    y='market_share (%)',
-    color='quarter_label',
-    barmode='group',
-    title='Part de Marché des Top Communes sur les 4 Derniers Trimestres',
-    labels={'market_share (%)': 'Part de Marché (%)', 'commune': 'Commune', 'quarter_label': 'Trimestre'},
-    color_discrete_sequence=px.colors.qualitative.Pastel
-)
-
-fig_market_share.update_layout(
-    xaxis_title='Commune',
-    yaxis_title='Part de Marché (%)',
-    legend_title='Trimestre',
-    hovermode='x unified',
-    height=400
-)
-
-st.plotly_chart(fig_market_share, use_container_width=True)
-
-# Analyse des Tendances et Calculs
-st.subheader("Analyse des Performances des Communes les Plus Performantes")
-
-analysis_data = []
-
-for commune in top_communes:
-    commune_data = top_communes_data[top_communes_data['commune'] == commune].copy()
-    avg_market_share = commune_data['market_share (%)'].mean()
-    latest_market_share = commune_data.iloc[-1]['market_share (%)']
-    
-    # Calcul du changement de part de marché entre le dernier et l'avant-dernier trimestre
-    if len(commune_data) >= 2:
-        previous_market_share = commune_data.iloc[-2]['market_share (%)']
-        market_share_change = latest_market_share - previous_market_share
-    else:
-        market_share_change = None
-    
-    # Déterminer la tendance
-    if market_share_change is not None:
-        if market_share_change > 0:
-            trend = "Hausse"
-            symbol = "⬆️"
-            # Phrases pour tendance positive
-            phrases = [
-                f"La part de marché à {commune} a augmenté de {market_share_change:+.2f}% au dernier trimestre, atteignant {latest_market_share:.2f}%.",
-                f"Nous observons une croissance de {market_share_change:+.2f}% de la part de marché à {commune}, maintenant à {latest_market_share:.2f}%.",
-                f"Amélioration notable à {commune} avec une part de marché en hausse de {market_share_change:+.2f}% pour atteindre {latest_market_share:.2f}%."
-            ]
-        elif market_share_change < 0:
-            trend = "Baisse"
-            symbol = "⬇️"
-            # Phrases pour tendance négative
-            phrases = [
-                f"La part de marché à {commune} a diminué de {market_share_change:+.2f}%, tombant à {latest_market_share:.2f}%.",
-                f"Réduction de notre part de marché à {commune} de {market_share_change:+.2f}%, désormais à {latest_market_share:.2f}%.",
-                f"Déclin observé à {commune} avec une baisse de {market_share_change:+.2f}% de notre part de marché, atteignant {latest_market_share:.2f}%."
-            ]
-        else:
-            trend = "Stable"
-            symbol = "➡️"
-            # Phrases pour tendance neutre
-            phrases = [
-                f"La part de marché à {commune} est restée stable à {latest_market_share:.2f}%.",
-                f"Aucune variation notable de la part de marché à {commune}, maintenue à {latest_market_share:.2f}%.",
-                f"La part de marché à {commune} demeure inchangée à {latest_market_share:.2f}%."
-            ]
-        # Sélectionner une phrase aléatoire pour varier les recommandations
-        phrase = random.choice(phrases)
-    else:
-        trend = "N/A"
-        symbol = "❓"
-        phrase = f"Données insuffisantes pour déterminer la tendance récente à {commune}."
-    
-    analysis_data.append({
-        'Commune': commune,
-        'Dernière Part de Marché (%)': f"{latest_market_share:.2f}",
-        'Changement Récent (%)': f"{market_share_change:+.2f}%" if market_share_change is not None else "N/A",
-        'Tendance': f"{symbol} {trend}",
-        'Analyse et Recommandation': phrase
-    })
-
-# Convertir les données d'analyse en DataFrame
-analysis_df = pd.DataFrame(analysis_data)
-
-# Afficher la table d'analyse compacte
-st.table(analysis_df)
-
-# --------------------------------------
-# Step 4. Pourcentage du Volume de Ventes Trimestriel par Commune (Une Couleur par Trimestre)
+# Step 0: Market Share Calculations
 # --------------------------------------
 
-st.header("4. Pourcentage du Volume de Ventes Trimestriel par Commune (Une Couleur par Trimestre)")
+# Total Sales in Market
+total_sales_market = df_market_filtered.groupby(['year', 'quarter', 'commune']).agg({'nombre de ventes': 'sum'}).reset_index()
+total_sales_market.rename(columns={'nombre de ventes': 'nombre de ventes_market'}, inplace=True)
 
-# Calculer le volume total des ventes par commune et par trimestre
-sales_volume_quarterly = market_share.groupby(['commune', 'year', 'quarter']).agg({'nombre de ventes_agency': 'sum'}).reset_index()
-sales_volume_quarterly['date'] = pd.to_datetime(sales_volume_quarterly['year'].astype(str) + '-Q' + sales_volume_quarterly['quarter'].astype(str))
+# Total Sales by Agency
+total_sales_agency = df_agency_filtered.groupby(['year', 'quarter', 'commune']).agg({'nombre de ventes': 'sum'}).reset_index()
+total_sales_agency.rename(columns={'nombre de ventes': 'nombre de ventes_agency'}, inplace=True)
 
-# Calculer le volume total des ventes pour toutes les communes pour chaque trimestre
-total_sales_per_quarter = sales_volume_quarterly.groupby(['year', 'quarter'])['nombre de ventes_agency'].sum().reset_index()
-total_sales_per_quarter['date'] = pd.to_datetime(total_sales_per_quarter['year'].astype(str) + '-Q' + sales_volume_quarterly['quarter'].astype(str))
+# Merge to calculate Market Share
+market_share = pd.merge(
+    total_sales_market,
+    total_sales_agency,
+    on=['year', 'quarter', 'commune'],
+    how='left'
+).fillna({'nombre de ventes_agency': 0})
 
-# Fusionner pour calculer la contribution en pourcentage de chaque commune
-sales_volume_quarterly = sales_volume_quarterly.merge(total_sales_per_quarter, on=['year', 'quarter', 'date'], suffixes=('', '_total'))
-sales_volume_quarterly['sales_volume_percentage'] = (sales_volume_quarterly['nombre de ventes_agency'] / sales_volume_quarterly['nombre de ventes_agency_total']) * 100
+market_share['market_share (%)'] = (market_share['nombre de ventes_agency'] / market_share['nombre de ventes_market']) * 100
+market_share['market_share (%)'] = market_share['market_share (%)'].replace([np.inf, -np.inf], 0).fillna(0)
 
-# Trier par pourcentage de volume de ventes pour mettre en évidence les trimestres les plus performants
-sales_volume_quarterly_sorted = sales_volume_quarterly.sort_values('sales_volume_percentage', ascending=False).head(20)
+market_share['date'] = pd.to_datetime(market_share['year'].astype(str) + '-Q' + market_share['quarter'].astype(str))
+market_share.sort_values('date', inplace=True)
 
-# Créer des étiquettes uniques pour chaque combinaison de commune et de trimestre
-sales_volume_quarterly_sorted['label'] = sales_volume_quarterly_sorted.apply(
-    lambda row: f"{row['commune']} - {row['date'].strftime('%b %Y')}", axis=1
-)
-
-# Attribuer une couleur unique à chaque trimestre
-sales_volume_quarterly_sorted['quarter_label'] = sales_volume_quarterly_sorted['year'].astype(str) + " T" + sales_volume_quarterly_sorted['quarter'].astype(str)
-
-# Identifier les deux derniers trimestres
-latest_dates = sales_volume_quarterly['date'].drop_duplicates().sort_values(ascending=False).head(2)
-
-# Mettre en évidence les deux derniers trimestres en mettant à jour leurs étiquettes sur l'axe des x
-highlighted_labels = [
-    f"<b style='font-size:16px'>{label}</b>" if row.date in latest_dates.values else label
-    for label, row in zip(sales_volume_quarterly_sorted['label'], sales_volume_quarterly_sorted.itertuples())
-]
-
-# Tracer : Séparer chaque trimestre et chaque commune
-fig_top20_quarters = px.bar(
-    sales_volume_quarterly_sorted,
-    x='label',
-    y='sales_volume_percentage',
-    color='quarter_label',  # Couleur par trimestre
-    title='Pourcentage du Volume de Ventes Trimestriel par Commune (Top 20 par Trimestre et Commune)',
-    labels={'sales_volume_percentage': 'Volume des Ventes (%)', 'label': 'Commune - Trimestre', 'quarter_label': 'Trimestre'},
-    color_discrete_sequence=px.colors.qualitative.Pastel
-)
-
-# Mettre à jour les étiquettes de l'axe x pour mettre en évidence les deux derniers trimestres
-fig_top20_quarters.update_xaxes(
-    ticktext=highlighted_labels,
-    tickvals=sales_volume_quarterly_sorted['label']
-)
-
-fig_top20_quarters.update_layout(
-    xaxis={'categoryorder': 'total descending', 'tickangle': 45},
-    yaxis_title='Volume des Ventes (%)',
-    hovermode='x unified',
-    annotations=[
-        dict(
-            text=(
-                "Chaque barre représente un trimestre spécifique pour une commune particulière.<br>"
-                "Cette visualisation aide à identifier les trimestres les plus performants pour chaque commune,<br>"
-                "chaque trimestre étant représenté par une couleur distincte."
-            ),
-            xref='paper',
-            yref='paper',
-            x=0.5,
-            y=1.08,
-            showarrow=False,
-            font=dict(size=12),
-            align='center'
-        )
-    ],
-    height=600
-)
-
-fig_top20_quarters.update_traces(textposition='inside', marker_line_width=1.5)
-
-# Afficher le graphique
-st.plotly_chart(fig_top20_quarters, use_container_width=True, key=generate_key('step7bis', 'separated_quarters_communes_sales_volume', 'highlight'))
-
-# Amélioration des analyses et recommandations pour s'adapter à tout résultat
-st.markdown("""
-**Analyse :**
-
-Ce graphique met en évidence les 20 meilleures contributions en pourcentage du volume de ventes trimestriel par commune. En observant les communes qui apparaissent dans ce top 20, il est possible d'identifier les zones géographiques et les périodes qui ont le plus contribué au volume de ventes total.
-
-**Comment lire le graphique :**
-
-- **Axe des X (horizontal) :** Chaque étiquette correspond à une commune pour un trimestre donné.
-- **Axe des Y (vertical) :** Indique le pourcentage du volume total de ventes que représente chaque commune pour le trimestre considéré.
-- **Couleurs par trimestre :** Chaque trimestre est représenté par une couleur unique, ce qui facilite la comparaison entre les périodes.
-
-**Recommandations :**
-
-- **Identifier les Opportunités de Croissance :** Repérez les communes qui ont une forte contribution au volume de ventes pour déterminer où concentrer vos efforts futurs.
-- **Analyser les Performances Saisonnières :** Observez les variations de performance d'une commune à l'autre selon les trimestres pour adapter vos stratégies marketing et commerciales en conséquence.
-- **Allouer les Ressources Efficacement :** Utilisez ces informations pour décider où investir en termes de personnel, de budget marketing et d'autres ressources afin de maximiser le rendement.
-- **Planifier les Actions Marketing :** Développez des campagnes ciblées pour les trimestres et les communes qui montrent un potentiel élevé, afin de capitaliser sur les tendances positives.
-""")
 
 # --------------------------------------
-# Section 5: Volume des Ventes vs Part de Marché par Commune
+# Step 5: Volume des Ventes vs Part de Marché par Commune
 # --------------------------------------
 
-
-st.markdown("\n\n")  # Ajouter des sauts de ligne avant le début du chapitre
 st.header("5. Volume des Ventes vs Part de Marché par Commune")
 
 # Question commerciale guidant la section
 st.markdown("""
-### Question Clé : **Comment le volume total des ventes du marché se compare-t-il à nos ventes par commune, et où devrions-nous concentrer nos efforts pour augmenter notre part de marché ?**
+**Comment pouvons-nous aligner notre stratégie pour capturer les plus gros marchés où nous sommes encore sous-représentés ?**
 """)
 
 # Étape 1: Filtrer les données depuis la première vente jusqu'à la dernière période
@@ -994,8 +1137,8 @@ else:
 
 # Identifier la dernière date de vente (agence ou marché)
 last_sale_date = market_share.loc[
-    (market_share['nombre de ventes_agency'] > 0) | 
-    (market_share['nombre de ventes_market'] > 0), 
+    (market_share['nombre de ventes_agency'] > 0) |
+    (market_share['nombre de ventes_market'] > 0),
     'date'
 ].max()
 
@@ -1008,7 +1151,7 @@ else:
 
 # Filtrer les données entre la première et la dernière date de vente
 market_share_filtered = market_share[
-    (market_share['date'] >= first_sale_date) & 
+    (market_share['date'] >= first_sale_date) &
     (market_share['date'] <= last_sale_date)
 ].copy()
 
@@ -1016,13 +1159,10 @@ if market_share_filtered.empty:
     st.warning("Aucune donnée disponible entre la première et la dernière période de vente.")
     st.stop()
 
-# Étape 2: Sélectionner les Top N communes
-top_n = st.slider("Sélectionner le nombre de communes à afficher", min_value=1, max_value=20, value=20)
-top_communes = market_share_filtered.groupby('commune')['nombre de ventes_agency'].sum().sort_values(ascending=False).head(top_n).index.tolist()
+# Étape 2: Afficher toutes les communes où l'agence a réalisé des ventes
+communes_with_sales = market_share_filtered.loc[market_share_filtered['nombre de ventes_agency'] > 0, 'commune'].unique()
 
-st.write(f"**Communes sélectionnées :** {', '.join(top_communes)}")
-
-filtered_sales = market_share_filtered[market_share_filtered['commune'].isin(top_communes)].copy()
+filtered_sales = market_share_filtered[market_share_filtered['commune'].isin(communes_with_sales)].copy()
 
 if filtered_sales.empty:
     st.warning("Aucune donnée disponible pour les communes sélectionnées.")
@@ -1038,7 +1178,7 @@ sales_vs_market_share['market_share (%)'] = (sales_vs_market_share['nombre de ve
 
 # Filtrer les communes avec des ventes positives pour éviter les divisions par zéro
 sales_vs_market_share = sales_vs_market_share[
-    (sales_vs_market_share['nombre de ventes_market'] > 0) & 
+    (sales_vs_market_share['nombre de ventes_market'] > 0) &
     (sales_vs_market_share['nombre de ventes_agency'] > 0)
 ].copy()
 
@@ -1060,7 +1200,7 @@ sales_vs_market_share['Performance'] = sales_vs_market_share.apply(categorize_co
 # Nettoyer les valeurs de 'market_share (%)' pour éviter les NaN et les valeurs négatives
 sales_vs_market_share['market_share_clean'] = sales_vs_market_share['market_share (%)'].clip(lower=0).fillna(0)
 
-# Graphique à bulles affichant toutes les communes
+# Graphique à bulles affichant toutes les communes, sans filtrer sur 2% pour le graphique
 fig_bubble = px.scatter(
     sales_vs_market_share,
     x='nombre de ventes_market',
@@ -1077,8 +1217,8 @@ fig_bubble = px.scatter(
     size_max=60,
     template='simple_white',
     color_discrete_map={
-        'Haute Part de Marché': 'green',
-        'Faible Part de Marché': 'red'
+        'Haute Part de Marché': '#D4A437',  # Century 21 Gold
+        'Faible Part de Marché': '#C0392B'   # Red for underperformance
     }
 )
 
@@ -1088,7 +1228,12 @@ fig_bubble.update_layout(
     legend_title='Performance',
     hovermode='closest',
     height=500,  # Réduire la hauteur pour une meilleure compacité
-    margin=dict(l=50, r=50, t=50, b=50)  # Réduire les marges pour économiser de l'espace
+    margin=dict(l=50, r=50, t=50, b=50),
+    font=dict(
+        family='Century Gothic',
+        size=12,
+        color='#3B3B3B'
+    )
 )
 
 st.plotly_chart(fig_bubble, use_container_width=True)
@@ -1096,18 +1241,18 @@ st.plotly_chart(fig_bubble, use_container_width=True)
 # Analyse des Communes Clés
 st.subheader("Analyse des Communes Clés")
 
-# Sélectionner les top 15 communes par part de marché (ou ajuster si top_n < 15)
-top_15_communes = sales_vs_market_share.head(20).copy()
+# Ne conserver que les communes avec une part de marché supérieure ou égale à 2%
+top_communities_over_2_percent = sales_vs_market_share[sales_vs_market_share['market_share (%)'] >= 2].copy()
 
 # Présenter les analyses sous forme de tableau sans recommandations
 analysis_data = []
 
-for index, row in top_15_communes.iterrows():
+for index, row in top_communities_over_2_percent.iterrows():
     commune = row['commune']
     ventes_marche = int(row['nombre de ventes_market'])
     ventes_agence = int(row['nombre de ventes_agency'])
     part_de_marche = row['market_share (%)']
-    
+
     analysis_data.append({
         'Commune': commune,
         'Ventes Marché': ventes_marche,
@@ -1121,96 +1266,80 @@ analysis_df = pd.DataFrame(analysis_data)
 # Afficher la table d'analyse
 st.table(analysis_df)
 
-# Recommandations Stratégiques
-st.subheader("Recommandations Stratégiques")
-
-# Générer les recommandations basées sur l'analyse des données
-recommendations_high = top_15_communes[top_15_communes['Performance'] == 'Haute Part de Marché']
-recommendations_low = top_15_communes[top_15_communes['Performance'] == 'Faible Part de Marché']
+# Générer les recommandations basées sur l'analyse des données pour les communes avec un marché >= 2%
+recommendations_high = top_communities_over_2_percent[top_communities_over_2_percent['Performance'] == 'Haute Part de Marché']
+recommendations_low = top_communities_over_2_percent[top_communities_over_2_percent['Performance'] == 'Faible Part de Marché']
 
 # Générer le texte des recommandations
 recommendations_text = "En nous basant sur l'analyse ci-dessus, voici les recommandations pour les communes clés :\n\n"
 
-# Communes avec Haute Part de Marché
-if not recommendations_high.empty:
-    recommendations_text += "- **Communes avec Haute Part de Marché :**\n"
-    for index, row in recommendations_high.iterrows():
-        commune = row['commune']
-        part_de_marche = row['market_share (%)']
-        recommendations = [
-            f"**{commune}** : Maintenez nos efforts pour conserver notre position dominante avec une part de marché de **{part_de_marche:.2f}%**.",
-            f"**{commune}** : Continuez à renforcer notre présence pour maintenir une part de marché élevée de **{part_de_marche:.2f}%**.",
-            f"**{commune}** : Consolidez nos stratégies actuelles pour préserver une part de marché solide de **{part_de_marche:.2f}%**."
-        ]
-        recommendation = random.choice(recommendations)  # Sélectionner une phrase aléatoire pour varier les recommandations
-        recommendations_text += f"  - {recommendation}\n"
-
-# Communes avec Faible Part de Marché
-if not recommendations_low.empty:
-    recommendations_text += "\n- **Communes avec Faible Part de Marché :**\n"
-    for index, row in recommendations_low.iterrows():
-        commune = row['commune']
-        part_de_marche = row['market_share (%)']
-        recommendations = [
-            f"**{commune}** : Opportunité à saisir pour augmenter notre part de marché actuellement à **{part_de_marche:.2f}%**.",
-            f"**{commune}** : Potentiel de croissance avec une part de marché de **{part_de_marche:.2f}%** - renforcez nos efforts commerciaux.",
-            f"**{commune}** : Augmentez notre présence marketing pour capter une plus grande part de marché de **{part_de_marche:.2f}%**."
-        ]
-        recommendation = random.choice(recommendations)  # Sélectionner une phrase aléatoire pour varier les recommandations
-        recommendations_text += f"  - {recommendation}\n"
 
 # Ajouter une note sur la période couverte
 recommendations_text += "\n_**Note** : Cette analyse couvre l'ensemble des périodes durant lesquelles nous avons été actifs. Elle offre une vue globale de nos performances par commune depuis le début de nos activités jusqu'à la dernière période de vente._"
 
 # Afficher les recommandations
-st.markdown(recommendations_text)
 
-# Transparence et Sollicitation de Retours
-st.markdown("""
-### Transparence : Retour et Discussions
-Cette section analyse l'évolution de notre part de marché par commune par rapport au marché au fil du temps. Les tendances observées indiquent où nous excellons et où des améliorations sont nécessaires.
-
-- **Questions à considérer** :
-    - Dans les communes où nous surperformons, quelles stratégies spécifiques ont conduit à cette croissance ?
-    - Pour les communes en sous-performance, quels facteurs externes ou internes pourraient être responsables ?
-    - Comment pouvons-nous adapter nos stratégies pour mieux aligner notre croissance avec celle du marché ?
-
-**Action Demandée** : Veuillez fournir vos retours et observations pour affiner nos stratégies et maximiser notre impact sur le marché.
-""")
 
 # --------------------------------------
 # Step 6: Part de Marché par Commune au Fil du Temps
 # --------------------------------------
-st.markdown("\n\n")  # Ajouter des sauts de ligne avant le début du chapitre
+
 st.header("6. Part de Marché par Commune au Fil du Temps")
 
 # Question commerciale guidant la section
-st.markdown("### Question Clé : Comment la part de marché de chaque commune a-t-elle évolué au fil du temps, et quelles stratégies pouvons-nous adopter pour optimiser notre position ?")
+st.markdown("""
+Comment la part de marché de chaque commune a-t-elle évolué au fil du temps, et quelles stratégies pouvons-nous adopter pour optimiser notre position ?
+""")
 
-# Calculer la part de marché moyenne par commune
-avg_market_share_commune = market_share.groupby('commune').agg({'market_share (%)': 'mean'}).reset_index()
+# Étape 1: Définir la date de début de l'analyse à Q1 2022
+analysis_start_date = pd.to_datetime('2022-01-01')
 
-# Obtenir les top 15 communes par part de marché moyenne
-top15_communes_over_time = avg_market_share_commune.sort_values('market_share (%)', ascending=False).head(15)['commune'].tolist()
+# Afficher la période d'analyse
+st.write(f"**Période d'analyse :** À partir du {analysis_start_date.strftime('%Y-%m-%d')}")
 
-# Filtrer les données de market_share pour les top 15 communes
-market_share_top15 = market_share[market_share['commune'].isin(top15_communes_over_time)]
+# Filtrer les données de market_share à partir de la date de début de l'analyse
+market_share_filtered = market_share[market_share['date'] >= analysis_start_date].copy()
 
-# Déterminer la première date où l'agence a vendu un bien
-first_sale_date = df_agency['date'].min()
+if market_share_filtered.empty:
+    st.warning("Aucune donnée disponible à partir de la date de début de l'analyse.")
+    st.stop()
 
-# Filtrer les données de market_share à partir de la première date de vente
-market_share_top15_filtered = market_share_top15[market_share_top15['date'] >= first_sale_date]
+# Étape 2: Sélectionner les communes avec des ventes réalisées par l'agence dans la période d'analyse
+communes_with_sales = market_share_filtered.loc[market_share_filtered['nombre de ventes_agency'] > 0, 'commune'].unique().tolist()
+communes_with_sales.sort()
 
-# Calculer la part de marché totale moyenne pour chaque date
-total_market_share = market_share_top15_filtered.groupby('date')['market_share (%)'].mean().reset_index()
+# Calculer les top 5 communes en termes de ventes de l'agence sur la période d'analyse
+top_communes = market_share_filtered.groupby('commune')['nombre de ventes_agency'].sum().sort_values(ascending=False).head(5).index.tolist()
 
-# Créer le graphique combiné : Barres pour les communes et ligne pour la part de marché totale
+# Créer une boîte de sélection multiple avec les top 5 communes sélectionnées par défaut
+selected_communes = st.multiselect(
+    "Sélectionnez les communes à afficher",
+    options=communes_with_sales,
+    default=top_communes,
+    key=generate_key('step6', 'communes_select')
+)
+
+if not selected_communes:
+    st.warning("Veuillez sélectionner au moins une commune pour afficher les données.")
+    st.stop()
+
+
+# Filtrer les données pour les communes sélectionnées
+market_share_top_n = market_share_filtered[market_share_filtered['commune'].isin(selected_communes)].copy()
+
+if market_share_top_n.empty:
+    st.warning("Aucune donnée disponible pour les communes sélectionnées.")
+    st.stop()
+
+# Étape 3: Calculer la part de marché moyenne par date pour les communes sélectionnées
+avg_market_share_by_date = market_share_top_n.groupby('date')['market_share (%)'].mean().reset_index()
+
+# Étape 4: Créer le graphique combiné : Barres pour les communes et ligne pour la moyenne des parts de marché
 fig_combined = go.Figure()
 
 # Ajouter les barres pour chaque commune
-for commune in market_share_top15_filtered['commune'].unique():
-    commune_data = market_share_top15_filtered[market_share_top15_filtered['commune'] == commune]
+for commune in selected_communes:
+    commune_data = market_share_top_n[market_share_top_n['commune'] == commune]
     fig_combined.add_trace(
         go.Bar(
             x=commune_data['date'],
@@ -1220,14 +1349,14 @@ for commune in market_share_top15_filtered['commune'].unique():
         )
     )
 
-# Ajouter la ligne pour la part de marché moyenne
+# Ajouter la ligne pour la moyenne des parts de marché pour les communes sélectionnées
 fig_combined.add_trace(
     go.Scatter(
-        x=total_market_share['date'],
-        y=total_market_share['market_share (%)'],
+        x=avg_market_share_by_date['date'],
+        y=avg_market_share_by_date['market_share (%)'],
         mode='lines+markers',
-        name='Part de Marché Moyenne (%)',
-        line=dict(color='black', width=3),
+        name='Moyenne des Parts de Marché (%)',
+        line=dict(color='#D4A437', width=3),
         marker=dict(size=6)
     )
 )
@@ -1235,104 +1364,71 @@ fig_combined.add_trace(
 # Mettre à jour la mise en page du graphique
 fig_combined.update_layout(
     barmode='group',
-    title='Part de Marché par Commune au Fil du Temps (Top 15 Communes et Part de Marché Moyenne)',
-    xaxis=dict(title='Date', tickformat='%b %Y'),
+    title='Part de Marché par Commune au Fil du Temps (À partir de Q1 2022)',
+    xaxis=dict(title='Date', tickformat='%Y-Q%q'),
     yaxis=dict(title='Part de Marché (%)', tickformat=',.2f', range=[0, 100]),
     hovermode='x unified',
     height=600,
     legend_title_text='Communes',
     margin=dict(l=40, r=40, t=60, b=40),
-)
-
-# Ajouter des annotations pour les pics de part de marché moyenne
-max_total_share = total_market_share['market_share (%)'].max()
-max_total_date = total_market_share[total_market_share['market_share (%)'] == max_total_share]['date'].iloc[0]
-
-fig_combined.add_annotation(
-    x=max_total_date,
-    y=max_total_share,
-    text="Pic de Part de Marché Moyenne",
-    showarrow=True,
-    arrowhead=2,
-    font=dict(size=10),
-    arrowcolor="green"
+    font=dict(
+        family='Century Gothic',
+        size=12,
+        color='#3B3B3B'
+    )
 )
 
 # Afficher le graphique
-st.plotly_chart(fig_combined, use_container_width=True, key='step6_market_share_grouped')
+st.plotly_chart(fig_combined, use_container_width=True, key=generate_key('step6', 'market_share_grouped'))
 
-# Analyse des Communes Clés
+# Étape 5: Création de la table d'analyse
+analysis_df = market_share_top_n.groupby('commune').agg(
+    Ventes_Agence=('nombre de ventes_agency', 'sum'),
+    Ventes_Marché=('nombre de ventes_market', 'sum'),
+).reset_index()
+
+# Calculer la part de marché totale en pourcentage
+analysis_df['Part_de_Marche_Totale (%)'] = (analysis_df['Ventes_Agence'] / analysis_df['Ventes_Marché']) * 100
+
+# Remplacer les valeurs infinies et NaN
+analysis_df['Part_de_Marche_Totale (%)'] = analysis_df['Part_de_Marche_Totale (%)'].replace([np.inf, -np.inf], 0).fillna(0)
+
+# Arrondir les valeurs
+analysis_df['Part_de_Marche_Totale (%)'] = analysis_df['Part_de_Marche_Totale (%)'].round(2)
+
+# Renommer 'commune' en 'Commune' pour l'affichage
+analysis_df.rename(columns={'commune': 'Commune'}, inplace=True)
+
+# Sélectionner les colonnes à afficher
+analysis_display = analysis_df[['Commune', 'Ventes_Agence', 'Ventes_Marché', 'Part_de_Marche_Totale (%)']]
+
+# Trier les communes par Part_de_Marche_Totale (%) décroissante
+analysis_display = analysis_display.sort_values('Part_de_Marche_Totale (%)', ascending=False).reset_index(drop=True)
+
+# Étape 6: Afficher la table d'analyse
 st.subheader("Analyse des Communes Clés")
+st.table(analysis_display)
 
-# Sélectionner les top 15 communes par part de marché
-top_15_communes = market_share_top15_filtered.groupby('commune').agg({
-    'market_share (%)': 'mean'
-}).reset_index().sort_values('market_share (%)', ascending=False).head(15)
 
-# Présenter les analyses sous forme de tableau compact
-analysis_data = []
+# Calculer la moyenne globale de la part de marché totale
+global_avg_market_share = analysis_display['Part_de_Marche_Totale (%)'].mean()
 
-for index, row in top_15_communes.iterrows():
-    commune = row['commune']
-    avg_part_de_marche = row['market_share (%)']
-    
-    analysis_data.append({
-        'Commune': commune,
-        'Part de Marché Moyenne (%)': f"{avg_part_de_marche:.2f}"
-    })
+# Classifier les communes en fonction de leur part de marché totale par rapport à la moyenne
+recommendations_high = analysis_display[analysis_display['Part_de_Marche_Totale (%)'] >= global_avg_market_share]['Commune'].tolist()
+recommendations_low = analysis_display[analysis_display['Part_de_Marche_Totale (%)'] < global_avg_market_share]['Commune'].tolist()
 
-# Convertir les données d'analyse en DataFrame
-analysis_df = pd.DataFrame(analysis_data)
 
-# Afficher la table d'analyse
-st.table(analysis_df)
-
-# Recommandations Stratégiques
-st.subheader("Recommandations Stratégiques")
-
-# Générer les recommandations basées sur l'analyse des données
-recommendations_high = top_15_communes[top_15_communes['market_share (%)'] >= top_15_communes['market_share (%)'].mean()]
-recommendations_low = top_15_communes[top_15_communes['market_share (%)'] < top_15_communes['market_share (%)'].mean()]
-
-# Générer le texte des recommandations
-recommendations_text = "En nous basant sur l'analyse ci-dessus, voici les recommandations pour les communes clés :\n\n"
-
-# Communes avec Haute Part de Marché
-if not recommendations_high.empty:
-    recommendations_text += "- **Communes avec Haute Part de Marché :**\n"
-    for index, row in recommendations_high.iterrows():
-        commune = row['commune']
-        part_de_marche = row['market_share (%)']
-        recommendations = [
-            f"**{commune}** : Maintenir nos efforts pour conserver notre position dominante avec une part de marché de **{part_de_marche:.2f}%**.",
-            f"**{commune}** : Continuer à renforcer notre présence pour maintenir une part de marché élevée de **{part_de_marche:.2f}%**.",
-            f"**{commune}** : Consolider nos stratégies actuelles pour préserver une part de marché solide de **{part_de_marche:.2f}%**."
-        ]
-        recommendation = random.choice(recommendations)  # Sélectionner une phrase aléatoire pour varier les recommandations
-        recommendations_text += f"  - {recommendation}\n"
-
-# Communes avec Faible Part de Marché
-if not recommendations_low.empty:
-    recommendations_text += "\n- **Communes avec Faible Part de Marché :**\n"
-    for index, row in recommendations_low.iterrows():
-        commune = row['commune']
-        part_de_marche = row['market_share (%)']
-        recommendations = [
-            f"**{commune}** : Opportunité à saisir pour augmenter notre part de marché actuellement à **{part_de_marche:.2f}%**.",
-            f"**{commune}** : Potentiel de croissance avec une part de marché de **{part_de_marche:.2f}%** - renforcer nos efforts commerciaux.",
-            f"**{commune}** : Augmenter notre présence marketing pour capter une plus grande part de marché de **{part_de_marche:.2f}%**."
-        ]
-        recommendation = random.choice(recommendations)  # Sélectionner une phrase aléatoire pour varier les recommandations
-        recommendations_text += f"  - {recommendation}\n"
 
 # Ajouter une note sur la période couverte
-recommendations_text += "\n_**Note** : Cette analyse couvre l'ensemble des périodes durant lesquelles nous avons été actifs. Elle offre une vue globale de nos performances par commune depuis le début de nos activités._"
+st.markdown(f"\n_**Note** : Cette analyse couvre tous les trimestres à partir de Q1 2022 ({analysis_start_date.strftime('%Y-%m-%d')}) jusqu'à la date la plus récente, offrant une vue complète de nos performances par commune sur cette période._")
 
-# Afficher les recommandations
-st.markdown(recommendations_text)
+
+
+
+
 
 # --------------------------------------
-# Step 7: Carte de Chaleur du Volume de Ventes par Commune (Folium Map avec Détails au Survol)
+# Step 7: Carte de Chaleur du Volume de Ventes par Commune avec Détails au Survol (sans cercles visibles)
 # --------------------------------------
 st.header("7. Carte de Chaleur du Volume de Ventes par Commune avec Détails au Survol")
 
@@ -1351,7 +1447,7 @@ if not df_agency_filtered.empty and required_columns.issubset(df_agency_filtered
     if not sales_by_commune.empty:
         # Créer une carte Folium centrée autour de la latitude et longitude moyennes
         map_center = [sales_by_commune['latitude'].mean(), sales_by_commune['longitude'].mean()]
-        sales_heatmap = folium.Map(location=map_center, zoom_start=9, tiles='CartoDB positron')
+        sales_heatmap = folium.Map(location=map_center, zoom_start=10, tiles='CartoDB positron', control_scale=True)
         
         # Préparer les données pour la HeatMap
         heat_data = sales_by_commune[['latitude', 'longitude', 'nombre de ventes']].values.tolist()
@@ -1359,24 +1455,22 @@ if not df_agency_filtered.empty and required_columns.issubset(df_agency_filtered
         # Ajouter la couche heatmap pour les données de vente
         HeatMap(
             data=heat_data,
-            radius=25,  # Rayon augmenté pour un mélange plus fluide
-            blur=15,    # Flou augmenté pour une répartition plus esthétique
+            radius=15,  # Rayon ajusté pour réduire la taille
+            blur=10,    # Flou ajusté pour une répartition plus compacte
             max_zoom=12
         ).add_to(sales_heatmap)
-        
-        # Ajouter des popups avec les détails au survol
+
+        # Ajouter des tooltips au survol des communes sans cercles
         for _, row in sales_by_commune.iterrows():
-            folium.CircleMarker(
+            folium.Marker(
                 location=[row['latitude'], row['longitude']],
-                radius=5,
-                popup=f"Commune: {row['commune']}<br>Ventes: {row['nombre de ventes']}",
-                color='green',
-                fill=True,
-                fill_color='green'
+                icon=folium.DivIcon(html=""),  # Pas d'icône visible
+                tooltip=f"<b>Commune:</b> {row['commune']}<br><b>Ventes:</b> {row['nombre de ventes']}"
             ).add_to(sales_heatmap)
         
-        # Rendre la carte Folium dans Streamlit
+        # Rendre la carte Folium dans Streamlit de manière compacte
         folium_static(sales_heatmap, width=700, height=500)
+        
         
     else:
         st.warning("Aucune donnée de vente agrégée disponible pour tracer la carte de chaleur.")
@@ -1386,13 +1480,11 @@ else:
 # --------------------------------------
 # Step 8: Communes les Plus Performantes par Part de Marché (Bar Chart)
 # --------------------------------------
-st.markdown("\n\n")  # Ajouter des sauts de ligne avant le début du chapitre
-
 st.header("8. Communes les Plus Performantes par Part de Marché")
 
 # Vérifier si 'market_share_filtered' est défini et contient les colonnes nécessaires
 if 'market_share_filtered' not in locals():
-    st.error("Le DataFrame 'market_share_filtered' n'est pas défini. Veuillez vous assurer que les Steps 5 et 6 sont exécutés correctement.")
+    st.error("Le DataFrame 'market_share_filtered' n'est pas défini. Veuillez vous assurer que les étapes précédentes sont exécutées correctement.")
     st.stop()
 
 required_columns = {'commune', 'market_share (%)'}
@@ -1400,30 +1492,26 @@ if not required_columns.issubset(market_share_filtered.columns):
     st.error(f"Le DataFrame 'market_share_filtered' doit contenir les colonnes suivantes : {required_columns}")
     st.stop()
 
-# Sélectionner les Top N communes par part de marché moyenne
-default_top_n = 10  # Valeur par défaut pour le top N
-top_n_step8 = st.slider(
-    "Sélectionner le nombre de communes à afficher",
-    min_value=1,
-    max_value=20,
-    value=default_top_n,
-    key='step8_top_n'
-)
+# Filtrer les communes où l'agence a vendu au moins un bien
+communes_with_sales = market_share_filtered.groupby('commune').agg({
+    'market_share (%)': 'sum'
+}).reset_index()
+communes_with_sales = communes_with_sales[communes_with_sales['market_share (%)'] > 0]
 
 # Agréger les données pour calculer la part de marché moyenne par commune
-avg_market_share_commune_step8 = market_share_filtered.groupby('commune').agg({
+avg_market_share_commune_step8 = market_share_filtered[market_share_filtered['commune'].isin(communes_with_sales['commune'])].groupby('commune').agg({
     'market_share (%)': 'mean'
 }).reset_index()
 
-# Trier les communes par part de marché moyenne décroissante et sélectionner le top N
-top_communes_step8 = avg_market_share_commune_step8.sort_values('market_share (%)', ascending=False).head(top_n_step8)
+# Limiter aux 15 communes les plus performantes par part de marché moyenne
+top_communes_step8 = avg_market_share_commune_step8.sort_values('market_share (%)', ascending=False).head(15)
 
 # Créer le graphique à barres pour les communes les plus performantes
 fig_top_communes_step8 = px.bar(
     top_communes_step8,
     x='commune',
     y='market_share (%)',
-    title=f'Top {top_n_step8} Communes les Plus Performantes par Part de Marché',
+    title=f'Top 15 Communes les Plus Performantes par Part de Marché pour la période T1 2022 - Présent', ### PAs oublier de changer la maniere d'afficher la date
     labels={'market_share (%)': 'Part de Marché (%)', 'commune': 'Commune'},
     text='market_share (%)',
     color='market_share (%)',
@@ -1437,211 +1525,54 @@ fig_top_communes_step8.update_layout(
     hovermode='x unified',
     coloraxis_colorbar=dict(title="Part de Marché (%)"),
     height=600,
-    margin=dict(l=50, r=50, t=50, b=50)
+    margin=dict(l=50, r=50, t=50, b=50),
+    font=dict(
+        family='Century Gothic',
+        size=12,
+        color='#3B3B3B'
+    )
 )
 
 # Afficher les valeurs de part de marché sur les barres
 fig_top_communes_step8.update_traces(texttemplate='%{text:.2f}%', textposition='outside')
 
 # Afficher le graphique dans Streamlit
-st.plotly_chart(fig_top_communes_step8, use_container_width=True, key='step8_top_performing_communes')
-
-# Analyse et Recommandations
-st.markdown(f"""
-**Analyse :** Ce graphique présente les {top_n_step8} communes où votre agence détient la plus haute part de marché moyenne depuis la première vente. Les barres vertes plus foncées indiquent une surperformance plus élevée.
-
-**Recommandation :**
-
-- **Améliorer les Sous-performances :** Bien que ces communes soient performantes, continuez à analyser les données pour identifier toute opportunité d'amélioration supplémentaire.
-- **Capitaliser sur les Forces :** Concentrez-vous sur ces communes pour maintenir et renforcer votre position dominante.
-- **Exploiter les Périodes de Pic :** Analysez les périodes où la part de marché est à son apogée pour reproduire ces succès dans d'autres zones.
-""")
+st.plotly_chart(fig_top_communes_step8, use_container_width=True)
 
 
 # --------------------------------------
-# Step 9: Tendances Trimestrielles de Part de Marché par Communes Vendues (Version Ultra Compacte)
+# Step 9: Distribution des Ventes par Type de Propriété
 # --------------------------------------
-st.header("9. Tendances Trimestrielles de Part de Marché par Communes Vendues (Version Ultra Compacte)")
+st.header("9. Distribution des Ventes par Type de Propriété pour le marché total")
 
-# Filtrer les communes où l'agence a vendu des biens
-sold_communes = df_agency['commune'].unique()
-market_share_sold_communes = market_share[market_share['commune'].isin(sold_communes)]
+# Vérifiez si la colonne 'type de bâtiment' est présente dans les données du marché
+if 'type de bâtiment' in df_market.columns:
+    # Agréger les ventes par type de bâtiment dans les données du marché
+    property_type_market = df_market.groupby('type de bâtiment').agg({'nombre de ventes': 'sum'}).reset_index()
 
-# Convertir la colonne 'date' en datetime si ce n'est pas déjà fait
-market_share_sold_communes['date'] = pd.to_datetime(market_share_sold_communes['date'])
-
-# Obtenir les 8 périodes les plus récentes (derniers 2 ans)
-latest_dates = market_share_sold_communes['date'].drop_duplicates().nlargest(8)
-market_share_recent = market_share_sold_communes[market_share_sold_communes['date'].isin(latest_dates)]
-
-# Identifier les 6 communes principales par volume de ventes
-top_6_communes = df_agency_filtered['commune'].value_counts().head(6).index
-market_share_top_6 = market_share_recent[market_share_recent['commune'].isin(top_6_communes)]
-
-# Créer une disposition de sous-graphiques compacte avec 2 lignes et 3 colonnes
-fig = make_subplots(
-    rows=2,
-    cols=3,
-    shared_xaxes=True,
-    vertical_spacing=0.15,
-    horizontal_spacing=0.05,
-    subplot_titles=[f"Commune: {commune}" for commune in top_6_communes]
-)
-
-# Tracer les tendances de part de marché pour chaque commune
-for i, commune in enumerate(top_6_communes):
-    row = i // 3 + 1
-    col = i % 3 + 1
-    commune_data = market_share_top_6[market_share_top_6['commune'] == commune].sort_values('date')
-    
-    # Vérifier si les données sont suffisantes
-    if commune_data.empty:
-        continue
-    
-    # Calculer la moyenne du marché pour la commune
-    market_avg = commune_data['market_share (%)'].mean()
-    
-    # Tracer la part de marché de l'agence
-    fig.add_trace(
-        go.Scatter(
-            x=commune_data['date'],
-            y=commune_data['market_share (%)'],
-            mode='lines+markers',
-            name='Agence',
-            line=dict(color='blue'),
-            marker=dict(size=6),
-            hovertemplate='%{x|%Y-%m-%d}: %{y:.2f}% (Agence)'
-        ),
-        row=row,
-        col=col
+    # Créer un graphique en camembert pour la répartition des ventes par type de propriété
+    fig_pie_property_market = px.pie(
+        property_type_market,
+        names='type de bâtiment',
+        values='nombre de ventes',
+        title="Répartition des Ventes sur le Marché par Type de Propriété",
+        hole=0.3  # Pour créer un effet de "donut"
     )
-    
-    # Tracer la moyenne du marché
-    fig.add_trace(
-        go.Scatter(
-            x=commune_data['date'],
-            y=[market_avg] * len(commune_data),
-            mode='lines',
-            name='Moyenne du Marché',
-            line=dict(color='red', dash='dash'),
-            hovertemplate='Moyenne Marché: %{y:.2f}%'
-        ),
-        row=row,
-        col=col
-    )
-    
-    # Ajouter des zones de surperformance et de sous-performance
-    fig.add_trace(
-        go.Scatter(
-            x=commune_data['date'],
-            y=np.maximum(commune_data['market_share (%)'], market_avg),
-            mode='none',
-            fill='toself',
-            fillcolor='rgba(34, 139, 34, 0.2)',  # Vert clair
-            hoverinfo='skip',
-            showlegend=False
-        ),
-        row=row,
-        col=col
-    )
-    
-    fig.add_trace(
-        go.Scatter(
-            x=commune_data['date'],
-            y=np.minimum(commune_data['market_share (%)'], market_avg),
-            mode='none',
-            fill='toself',
-            fillcolor='rgba(220, 20, 60, 0.2)',  # Rouge clair
-            hoverinfo='skip',
-            showlegend=False
-        ),
-        row=row,
-        col=col
-    )
-    
-    # Annotation pour indiquer la surperformance et la sous-performance
-    fig.add_annotation(
-        x=0.5,
-        y=1.05,
-        xref=f'x domain',
-        yref=f'y domain',
-        text=f"<b>Surperformance</b> (Vert) et <b>Sous-performance</b> (Rouge)",
-        showarrow=False,
-        font=dict(size=10, color="black"),
-        xanchor='center',
-        yanchor='bottom',
-        row=row,
-        col=col
-    )
+    st.plotly_chart(fig_pie_property_market, use_container_width=True)
 
-# Mise à jour du layout pour une meilleure lisibilité et compacité
-fig.update_layout(
-    height=800,  # Ajusté pour une meilleure disposition
-    title_text="Tendances Trimestrielles de Part de Marché pour les 6 Communes les Plus Vendues (Comparaison Agence vs Marché - Dernières 8 Périodes)",
-    hovermode='x unified',
-    showlegend=False,  # Légende globale désactivée pour éviter la surcharge
-    annotations=[
-        dict(
-            text=(
-                "Comparaison de la part de marché de l'agence (Ligne Bleue) avec la moyenne du marché (Ligne Rouge Pointillée).<br>"
-                "Les zones vertes représentent une surperformance de l'agence par rapport à la moyenne du marché.<br>"
-                "Les zones rouges montrent une sous-performance par rapport à la moyenne."
-            ),
-            xref='paper',
-            yref='paper',
-            x=0.5,
-            y=1.02,
-            showarrow=False,
-            font=dict(size=12, family='Arial, sans-serif'),
-            align='center'
-        )
-    ]
-)
-
-# Afficher le graphique dans Streamlit
-st.plotly_chart(fig, use_container_width=True)
-
-# **Remarque** : Pour une meilleure lisibilité, toutes les recommandations et analyses ont été intégrées dans les annotations et la disposition visuelle du graphique.
-
-
-# --------------------------------------
-# Step 11. Sales Distribution by Property Type (Pie Chart)
-# --------------------------------------
-st.markdown("\n\n")  # Ajouter des sauts de ligne avant le début du chapitre
-
-st.header("11. Répartition des Ventes par Type de Propriété")
-
-# Assuming df_agency_filtered contains 'type de bâtiment'
-if 'type de bâtiment' in df_market_filtered.columns:
-    # Market sales by property type
-    market_property_type = df_market_filtered.groupby('type de bâtiment').agg({'nombre de ventes': 'sum'}).reset_index()
-    market_property_type.rename(columns={'nombre de ventes': 'nombre de ventes_market'}, inplace=True)
-
-    if not market_property_type.empty:
-        # Plot Market Sales Distribution
-        fig_pie_market = px.pie(
-            market_property_type,
-            names='type de bâtiment',
-            values='nombre de ventes_market',
-            title='Répartition des Ventes sur le Marché par Type de Propriété',
-            hole=0.3
-        )
-        st.plotly_chart(fig_pie_market, use_container_width=True, key=generate_key('step13', 'market_sales_distribution', 'pie'))
-
-        st.markdown("""
-        **Analyse :** Le diagramme circulaire montre la répartition des ventes sur le marché parmi différents types de propriétés, permettant d'identifier les types de propriétés les plus populaires.
-
-        **Recommandation :** Concentrez-vous sur l'augmentation des inscriptions pour les types de propriétés ayant des ventes élevées, ou explorez des stratégies pour augmenter les ventes dans les segments sous-performants.
-        """)
-    else:
-        st.write("Données insuffisantes pour tracer la Répartition des Ventes par Type de Propriété.")
+    # Analyse et recommandations
+    st.markdown("""
+    Répartition des ventes sur le marché en fonction des différents types de propriétés.
+    """)
 else:
-    st.write("Colonne 'type de bâtiment' non trouvée dans les données du marché.")
-    
-    
+    # Affichez un message si la colonne 'type de bâtiment' n'est pas disponible
+    st.warning("La colonne 'type de bâtiment' n'est pas disponible dans les données du marché.")
+
+
+
 
 # --------------------------------------
-# Step 12: Benchmark des Concurrents par Commune (avec Filtre de Date Ajusté)
+# Step 12: Benchmark des Concurrents par Commune
 # --------------------------------------
 st.header("12. Benchmark des Concurrents par Commune")
 
@@ -1676,7 +1607,7 @@ competitor_sales['ventes_concurrents'] = competitor_sales['ventes_marché'] - co
 competitor_sales['ventes_concurrents'] = competitor_sales['ventes_concurrents'].apply(lambda x: x if x >= 0 else 0)
 
 # Checkbox pour filtrer "Mes Communes"
-mes_communes = st.checkbox("Mes Communes", value=False)
+mes_communes = st.checkbox("Afficher uniquement les communes où l'agence a vendu", value=True)
 
 # Filtrer pour les communes où l'agence a vendu des biens ou les top 20 communes du marché
 if mes_communes:
@@ -1706,16 +1637,29 @@ if not competitor_sales_melted.empty:
         x='commune',
         y='Nombre de Ventes',
         color='Type de Ventes',
-        title='Ventes de l\'Agence vs Ventes des Concurrents par Commune (Top 20)' if not mes_communes else 'Ventes de l\'Agence vs Ventes des Concurrents (Mes Communes)',
+        title='Ventes de l\'Agence vs Ventes des Concurrents par Commune',
         labels={'Nombre de Ventes': 'Nombre de Ventes', 'commune': 'Commune'},
-        barmode='stack'
+        barmode='stack',
+        color_discrete_map={
+            'Ventes de l\'Agence': '#D4A437',
+            'Ventes des Concurrents': '#3B3B3B'
+        }
     )
-    fig_competitor.update_layout(xaxis={'categoryorder': 'total descending'})
+    fig_competitor.update_layout(
+        xaxis={'categoryorder': 'total descending'},
+        hovermode='x unified',
+        height=600,
+        font=dict(
+            family='Century Gothic',
+            size=12,
+            color='#3B3B3B'
+        )
+    )
 
     # Afficher le graphique
-    st.plotly_chart(fig_competitor, use_container_width=True)
+    st.plotly_chart(fig_competitor, use_container_width=True, key=generate_key('step12', 'competitor_benchmark'))
 
-    # Observations et recommandations compactes
+    # Observations et recommandations
     st.markdown("### Observations et Recommandations")
 
     # Analyse interne pour déterminer les communes clés
@@ -1724,142 +1668,37 @@ if not competitor_sales_melted.empty:
     top_agency_communes = competitor_sales_filtered.sort_values('ventes_agence', ascending=False)['commune'].tolist()
 
     # Observations
-    st.markdown(f"**Communes avec forte concurrence :** {', '.join(top_competitor_communes[:3])}")
-    st.markdown(f"**Communes où l'agence sous-performe :** {', '.join(underperforming_communes[:3])}")
-    st.markdown(f"**Communes où l'agence performe bien :** {', '.join(top_agency_communes[:3])}")
+    if top_competitor_communes:
+        st.markdown(f"**Communes avec forte concurrence :** {', '.join(top_competitor_communes[:3])}")
+    if underperforming_communes:
+        st.markdown(f"**Communes où l'agence sous-performe :** {', '.join(underperforming_communes[:3])}")
+    if top_agency_communes:
+        st.markdown(f"**Communes où l'agence performe bien :** {', '.join(top_agency_communes[:3])}")
 
-    # Recommandations
-    st.markdown("**Recommandations :**")
-    st.markdown("- **Accentuer les efforts commerciaux** dans les communes où la concurrence est forte et où l'agence sous-performe.")
-    st.markdown("- **Maintenir et renforcer la présence** dans les communes où l'agence performe bien pour conserver l'avantage compétitif.")
-    st.markdown("- **Analyser les stratégies des concurrents** pour adapter nos approches marketing et commerciales.")
-else:
-    st.write("Aucune donnée disponible pour le Benchmark des Concurrents par Commune.")
- 
-    
-# --------------------------------------
-# Step 13. Sales Trends Over Time (Quarterly)
-# --------------------------------------
-st.markdown("\n\n")  # Ajouter des sauts de ligne avant le début du chapitre
 
+
+# Continuing from where we left off
+
+# --------------------------------------
+# Step 13: Tendances des Ventes au Fil du Temps (Trimestriel) - Analyse Avancée
+# --------------------------------------
 st.header("13. Tendances des Ventes au Fil du Temps (Trimestriel)")
 
-# Aggregate quarterly sales
-agency_sales_time = df_agency_filtered.groupby(['year', 'quarter']).agg({'nombre de ventes': 'sum'}).reset_index()
-market_sales_time = df_market_filtered.groupby(['year', 'quarter']).agg({'nombre de ventes': 'sum'}).reset_index()
-
-# Convert year and quarter to datetime for consistency
-agency_sales_time['date'] = pd.to_datetime(agency_sales_time['year'].astype(str) + '-Q' + agency_sales_time['quarter'].astype(str))
-market_sales_time['date'] = pd.to_datetime(market_sales_time['year'].astype(str) + '-Q' + market_sales_time['quarter'].astype(str))
-
-# Filter the data starting from the earliest date where the agency has sales
-earliest_agency_date = agency_sales_time['date'].min()
-
-# Filter both agency and market sales to start from the earliest agency sale date
-agency_sales_time = agency_sales_time[agency_sales_time['date'] >= earliest_agency_date]
-market_sales_time = market_sales_time[market_sales_time['date'] >= earliest_agency_date]
-
-# Merge data on date to compare agency and market sales
-sales_trends = pd.merge(
-    agency_sales_time[['date', 'nombre de ventes']],
-    market_sales_time[['date', 'nombre de ventes']],
-    on='date',
-    how='outer',
-    suffixes=('_agency', '_market')
-).fillna(0)
-
-# Sort the values by date
-sales_trends.sort_values('date', inplace=True)
-
-# Calculate market share over time
-sales_trends['market_share (%)'] = (sales_trends['nombre de ventes_agency'] / sales_trends['nombre de ventes_market']) * 100
-sales_trends['market_share (%)'] = sales_trends['market_share (%)'].replace([np.inf, -np.inf], 0).fillna(0)
-
-if not sales_trends.empty:
-    # Plot the market share trends over time
-    fig_sales_trends = go.Figure()
-    fig_sales_trends.add_trace(go.Scatter(
-        x=sales_trends['date'], 
-        y=sales_trends['market_share (%)'], 
-        mode='lines+markers', 
-        name='Part de Marché (%)',
-        line=dict(color='blue'),
-        marker=dict(size=6),
-        text=[f"{y:.1f}%" for y in sales_trends['market_share (%)']],
-        textposition='top center'
-    ))
-
-    # Update layout for better readability
-    fig_sales_trends.update_layout(
-        title='Tendances de la Part de Marché au Fil du Temps (Trimestriel)',
-        xaxis_title='Date',
-        yaxis_title='Part de Marché (%)',
-        hovermode='x unified',
-        height=500  # Make the plot compact
-    )
-
-    # Add annotations for peaks and troughs
-    sales_trends['is_peak'] = sales_trends['market_share (%)'] > sales_trends['market_share (%)'].quantile(0.75)
-    sales_trends['is_trough'] = sales_trends['market_share (%)'] < sales_trends['market_share (%)'].quantile(0.25)
-
-    for idx, row in sales_trends.iterrows():
-        if row['is_peak']:
-            fig_sales_trends.add_annotation(
-                x=row['date'],
-                y=row['market_share (%)'],
-                text="Pic de Part de Marché",
-                showarrow=True,
-                arrowhead=1,
-                arrowcolor="green",
-                font=dict(size=10)
-            )
-        elif row['is_trough']:
-            fig_sales_trends.add_annotation(
-                x=row['date'],
-                y=row['market_share (%)'],
-                text="Creux de Part de Marché",
-                showarrow=True,
-                arrowhead=1,
-                arrowcolor="red",
-                font=dict(size=10)
-            )
-
-    # Render the plot in Streamlit
-    st.plotly_chart(fig_sales_trends, use_container_width=True, key=generate_key('step15', 'market_share_trends'))
-
-    # Insight and Recommendation
-    st.markdown(""" Analyse : Le graphique linéaire illustre les tendances trimestrielles de la part de marché de votre agence comparée à celle du marché global. Cela vous permet de suivre l'évolution de votre position concurrentielle.
-
-    Comment lire le graphique :
-
-    Axe des X (horizontal) : Représente les dates par trimestre.
-    Axe des Y (vertical) : Représente la part de marché (%) de l'agence.
-    Ligne Bleue : Montre les fluctuations de la part de marché de l'agence au cours du temps, avec des annotations indiquant les pics et les creux.
-    Calculs :
-
-    Part de Marché (%) = (Ventes de l'agence / Ventes totales du marché) * 100 par trimestre.
-    Recommandation :
-
-    Identifier les Saisons de Succès : Utilisez les pics pour déterminer les périodes où vos stratégies ont été efficaces et planifiez des campagnes similaires pour les trimestres futurs.
-    Traiter les Périodes de Faible Performance : Enquêtez sur les raisons des creux et ajustez les stratégies, comme des offres spéciales ou des campagnes publicitaires plus ciblées, pour améliorer la performance pendant ces périodes. """)
-else:
-    st.write("Aucune donnée disponible pour les Tendances Trimestrielles de la Part de Marché.")
-
-
-# ----------------------------
-# Step 14
-# ----------------------------
-st.markdown("\n\n")  # Ajouter des sauts de ligne avant le début du chapitre
-
 # Calculs nécessaires
+
+# Obtenir la liste des communes où l'agence a déjà vendu des biens
+communes_with_sales = df_agency_filtered['commune'].unique().tolist()
+
+# Filtrer les données de marché pour ne garder que les communes où l'agence a déjà vendu
+df_market_filtered_communes = df_market_filtered[df_market_filtered['commune'].isin(communes_with_sales)].copy()
 
 # Total des ventes de l'agence par trimestre
 total_sales_quarter_agency = df_agency_filtered.groupby(['year', 'quarter']).agg(
     total_sales_agency=('nombre de ventes', 'sum')
 ).reset_index()
 
-# Total des ventes du marché par trimestre
-total_sales_quarter_market = df_market_filtered.groupby(['year', 'quarter']).agg(
+# Total des ventes du marché par trimestre (en filtrant les communes où l'agence a vendu)
+total_sales_quarter_market = df_market_filtered_communes.groupby(['year', 'quarter']).agg(
     total_sales_market=('nombre de ventes', 'sum')
 ).reset_index()
 
@@ -1873,16 +1712,38 @@ sales_quarter = pd.merge(
 
 # Ajout d'une colonne pour la date au format datetime (pour faciliter le tri et l'affichage)
 sales_quarter['date'] = pd.to_datetime(sales_quarter['year'].astype(str) + '-Q' + sales_quarter['quarter'].astype(str))
+sales_quarter['date'] = sales_quarter['date'] + QuarterEnd(0)
 
-# Calcul de la part de marché de l'agence par trimestre
+# Calcul de la part de marché de l'agence par trimestre uniquement dans les communes où l'agence a vendu
 sales_quarter['market_share (%)'] = (sales_quarter['total_sales_agency'] / sales_quarter['total_sales_market']) * 100
 sales_quarter['market_share (%)'] = sales_quarter['market_share (%)'].replace([float('inf'), -float('inf')], 0).fillna(0)
 
 # Tri des données à partir du trimestre le plus ancien
 sales_quarter = sales_quarter.sort_values('date')
 
+# Calcul des différences trimestrielles pour les ventes et la part de marché
+sales_quarter['sales_change (%)'] = sales_quarter['total_sales_agency'].pct_change() * 100
+sales_quarter['market_share_change (%)'] = sales_quarter['market_share (%)'].pct_change() * 100
+
+# Calcul des ventes globales dans les communes où l'agence n'a pas encore vendu
+df_market_no_sales = df_market_filtered[~df_market_filtered['commune'].isin(communes_with_sales)]
+total_sales_quarter_market_no_sales = df_market_no_sales.groupby(['year', 'quarter']).agg(
+    total_sales_market_no_sales=('nombre de ventes', 'sum')
+).reset_index()
+
+# Fusionner avec les données principales
+sales_quarter = pd.merge(
+    sales_quarter,
+    total_sales_quarter_market_no_sales,
+    on=['year', 'quarter'],
+    how='left'
+).fillna(0)
+
+# Analyse des ventes globales où l'agence n'est pas encore présente
+sales_quarter['market_opportunity_growth'] = sales_quarter['total_sales_market_no_sales'].pct_change() * 100
+
 # Création du graphique en utilisant Plotly
-fig = go.Figure()
+fig = make_subplots(specs=[[{"secondary_y": True}]])
 
 # Ligne pour les ventes totales de l'agence
 fig.add_trace(go.Scatter(
@@ -1890,31 +1751,30 @@ fig.add_trace(go.Scatter(
     y=sales_quarter['total_sales_agency'],
     mode='lines+markers',
     name='Ventes Totales Agence',
-    line=dict(color='blue'),
-    marker=dict(size=6),
+    line=dict(color='#D4A437'),  # Century 21 Gold
+    marker=dict(size=8),
     text=[f"{int(sales)} ventes" for sales in sales_quarter['total_sales_agency']],
     textposition='top center',
-    hovertemplate='Trimestre: %{x}<br>Ventes Totales: %{y}'
-))
+    hovertemplate='Trimestre: %{x|%Y-Q%q}<br>Ventes Totales: %{y}'
+), secondary_y=False)
 
-# Ligne pour la part de marché de l'agence
+# Ligne pour la part de marché de l'agence (uniquement dans les communes où l'agence a vendu)
 fig.add_trace(go.Scatter(
     x=sales_quarter['date'],
     y=sales_quarter['market_share (%)'],
     mode='lines+markers',
     name='Part de Marché (%)',
-    line=dict(color='green'),
-    marker=dict(size=6),
-    yaxis='y2',  # Utilisation du deuxième axe Y
+    line=dict(color='#3B3B3B'),  # Century 21 Dark Gray
+    marker=dict(size=8),
     text=[f"{share:.2f}%" for share in sales_quarter['market_share (%)']],
     textposition='top center',
-    hovertemplate='Trimestre: %{x}<br>Part de Marché: %{y:.2f}%'
-))
+    hovertemplate='Trimestre: %{x|%Y-Q%q}<br>Part de Marché: %{y:.2f}%'
+), secondary_y=True)
 
 # Mise à jour du layout du graphique
 fig.update_layout(
-    title='Performance des Trimestres (Ventes Totales et Part de Marché)',
-    xaxis=dict(title='Date', tickformat='%b %Y'),
+    title='Performance des Ventes et Part de Marché au Fil du Temps (Trimestriel)',
+    xaxis=dict(title='Date', tickformat='%Y-Q%q'),
     yaxis=dict(
         title='Ventes Totales Agence',
         showgrid=False,
@@ -1933,68 +1793,212 @@ fig.update_layout(
         xanchor="center",
         x=0.5
     ),
-    height=600
+    height=600,
+    font=dict(
+        family='Century Gothic',
+        size=12,
+        color='#3B3B3B'
+    )
 )
 
 # Annotations pour les meilleurs et pires trimestres en termes de part de marché
-best_quarter = sales_quarter.loc[sales_quarter['market_share (%)'].idxmax()]
-worst_quarter = sales_quarter.loc[sales_quarter['market_share (%)'].idxmin()]
+if not sales_quarter.empty:
+    best_quarter_market_share = sales_quarter.loc[sales_quarter['market_share (%)'].idxmax()]
+    worst_quarter_market_share = sales_quarter.loc[sales_quarter['market_share (%)'].idxmin()]
+    best_quarter_sales = sales_quarter.loc[sales_quarter['total_sales_agency'].idxmax()]
+    worst_quarter_sales = sales_quarter.loc[sales_quarter['total_sales_agency'].idxmin()]
 
-fig.add_annotation(
-    x=best_quarter['date'],
-    y=best_quarter['market_share (%)'],
-    text=f"Meilleur Trimestre (Part de Marché) : {best_quarter['market_share (%)']:.2f}%",
-    showarrow=True,
-    arrowhead=2,
-    yshift=10,
-    arrowcolor="green",
-    font=dict(size=10)
-)
+    fig.add_annotation(
+        x=best_quarter_market_share['date'],
+        y=best_quarter_market_share['market_share (%)'],
+        text=f"🔝 Meilleur Trimestre Part de Marché: {best_quarter_market_share['market_share (%)']:.2f}%",
+        showarrow=True,
+        arrowhead=2,
+        yshift=10,
+        arrowcolor="#3B3B3B",
+        font=dict(size=10, color="#3B3B3B")
+    )
 
-fig.add_annotation(
-    x=worst_quarter['date'],
-    y=worst_quarter['market_share (%)'],
-    text=f"Pire Trimestre (Part de Marché) : {worst_quarter['market_share (%)']:.2f}%",
-    showarrow=True,
-    arrowhead=2,
-    yshift=-10,
-    arrowcolor="red",
-    font=dict(size=10)
-)
+    fig.add_annotation(
+        x=worst_quarter_market_share['date'],
+        y=worst_quarter_market_share['market_share (%)'],
+        text=f"⚠️ Pire Trimestre Part de Marché: {worst_quarter_market_share['market_share (%)']:.2f}%",
+        showarrow=True,
+        arrowhead=2,
+        yshift=-10,
+        arrowcolor="#C0392B",
+        font=dict(size=10, color="#C0392B")
+    )
 
-# Annotations pour les meilleurs trimestres en termes de ventes totales
-best_sales_quarter = sales_quarter.loc[sales_quarter['total_sales_agency'].idxmax()]
-fig.add_annotation(
-    x=best_sales_quarter['date'],
-    y=best_sales_quarter['total_sales_agency'],
-    text=f"Meilleur Trimestre (Ventes Totales) : {best_sales_quarter['total_sales_agency']} ventes",
-    showarrow=True,
-    arrowhead=2,
-    yshift=10,
-    arrowcolor="blue",
-    font=dict(size=10)
-)
+    fig.add_annotation(
+        x=best_quarter_sales['date'],
+        y=best_quarter_sales['total_sales_agency'],
+        text=f"🔝 Meilleur Trimestre Ventes: {int(best_quarter_sales['total_sales_agency'])} ventes",
+        showarrow=True,
+        arrowhead=2,
+        yshift=10,
+        arrowcolor="#D4A437",
+        font=dict(size=10, color="#D4A437")
+    )
+
+    fig.add_annotation(
+        x=worst_quarter_sales['date'],
+        y=worst_quarter_sales['total_sales_agency'],
+        text=f"⚠️ Pire Trimestre Ventes: {int(worst_quarter_sales['total_sales_agency'])} ventes",
+        showarrow=True,
+        arrowhead=2,
+        yshift=-10,
+        arrowcolor="#C0392B",
+        font=dict(size=10, color="#C0392B")
+    )
 
 # Affichage du graphique dans Streamlit
 st.plotly_chart(fig, use_container_width=True)
 
-# Ajout d'analyse et de recommandations
+# Analyse approfondie et recommandations pour le gérant
+if not sales_quarter.empty:
+    last_sales_change = sales_quarter['sales_change (%)'].iloc[-1]
+    last_market_share_change = sales_quarter['market_share_change (%)'].iloc[-1]
+    market_opportunity_growth = sales_quarter['market_opportunity_growth'].iloc[-1]
+
+    # Analyse des performances avec insight détaillé
+    st.markdown(f"""
+    ### Analyse Approfondie :
+    - **Tendances des Ventes** : Le dernier trimestre montre une variation de **{last_sales_change:.2f}%** pour les ventes totales de l'agence. Si cette tendance est positive, elle montre un positionnement solide sur le marché. Si elle est négative, des ajustements stratégiques peuvent être nécessaires.
+    - **Part de Marché** : La part de marché de l'agence a varié de **{last_market_share_change:.2f}%**. Une baisse pourrait indiquer une montée de la concurrence ou un recentrage stratégique, tandis qu'une hausse signale une efficacité accrue des actions locales.
+    - **Opportunités Inexploitées** : Les ventes dans les communes où l'agence n'est pas encore présente ont crû de **{market_opportunity_growth:.2f}%**. Cela montre un potentiel à exploiter dans ces zones, où une présence pourrait générer de nouvelles opportunités de marché.
+    """)
+
+
+# --------------------------------------
+# Step 14: Prévisions des Ventes Futures avec Machine Learning
+# --------------------------------------
+st.header("14. Prévisions des Ventes Futures avec Machine Learning")
+
+# Question stratégique guidant la section
 st.markdown("""
-**Analyse :** Ce graphique présente deux perspectives importantes sur la performance des trimestres :
-- **Ventes Totales de l'Agence :** La ligne bleue indique le volume total des ventes réalisées par votre agence pour chaque trimestre. Cela permet de voir l'évolution absolue des ventes.
-- **Part de Marché :** La ligne verte représente la part de marché de votre agence par rapport aux ventes totales du marché pour chaque trimestre. Cela montre la performance relative de votre agence.
-
-Les annotations mettent en évidence les trimestres avec les meilleures et les pires performances, en termes de part de marché et de ventes totales.
-
-**Comment lire le graphique :**
-- **Axe des X (horizontal) :** Représente les trimestres dans l'ordre chronologique.
-- **Axe des Y (à gauche) :** Indique les ventes totales de l'agence pour chaque trimestre.
-- **Axe des Y (à droite) :** Indique la part de marché en pourcentage.
-- **Ligne Bleue :** Indique les ventes totales de l'agence.
-- **Ligne Verte :** Indique la part de marché de l'agence par rapport au marché total.
-
-**Recommandation :**
-- **Renforcer les Stratégies Réussies :** Identifiez les trimestres où votre agence a obtenu la meilleure part de marché et analysez les actions qui ont été entreprises pour reproduire ce succès.
-- **Améliorer les Performances lors des Trimestres Faibles :** Pour les trimestres avec une faible part de marché ou de faibles ventes, envisagez des actions correctives, telles que l'amélioration des offres, des promotions ciblées ou des campagnes marketing intensifiées.
-- **Planification des Campagnes :** Les trimestres avec des ventes totales élevées montrent une forte demande. Concentrez vos efforts de vente et de marketing avant ces périodes pour maximiser les résultats.
+**Comment pouvons-nous utiliser les données historiques pour prévoir les ventes futures et mieux planifier nos stratégies commerciales ?**
 """)
+
+# Vérifier si suffisamment de données sont disponibles
+if len(sales_quarter) < 4:
+    st.warning("Pas assez de données historiques pour construire un modèle de prédiction fiable.")
+else:
+    # Préparation des données pour le modèle
+    sales_quarter_ml = sales_quarter.copy()
+    sales_quarter_ml['quarter_number'] = sales_quarter_ml['year'] * 4 + sales_quarter_ml['quarter']  # Convertir les années et trimestres en un numéro de trimestre unique
+    sales_quarter_ml = sales_quarter_ml.sort_values('quarter_number')
+
+    # Caractéristiques (features) et cible (target)
+    X = sales_quarter_ml[['quarter_number', 'total_sales_market']]
+    y = sales_quarter_ml['total_sales_agency']
+
+    # Diviser les données en ensembles d'entraînement et de test
+    from sklearn.model_selection import train_test_split
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, shuffle=False)
+
+    # Créer et entraîner le modèle de régression linéaire
+    
+    model = LinearRegression()
+    model.fit(X_train, y_train)
+
+    # Prédire sur l'ensemble de test
+    y_pred = model.predict(X_test)
+
+    # Afficher les performances du modèle
+    from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+    mae = mean_absolute_error(y_test, y_pred)
+    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+    r2 = r2_score(y_test, y_pred)
+
+    st.markdown(f"**Performance du Modèle :**")
+    st.write(f"- Mean Absolute Error (MAE): {mae:.2f}")
+    st.write(f"- Root Mean Squared Error (RMSE): {rmse:.2f}")
+    st.write(f"- R² Score: {r2:.2f}")
+
+    # Prévision pour les prochains trimestres
+    last_quarter_number = X['quarter_number'].max()
+    future_quarters = pd.DataFrame({
+        'quarter_number': [last_quarter_number + i for i in range(1, 5)],
+        'total_sales_market': [X['total_sales_market'].mean()] * 4  # Supposons que le marché reste stable
+    })
+
+    future_sales_pred = model.predict(future_quarters)
+
+    # Ajouter les prévisions au dataframe pour affichage
+    future_quarters['total_sales_agency_pred'] = future_sales_pred
+    future_quarters['year'] = (future_quarters['quarter_number'] - 1) // 4
+    future_quarters['quarter'] = ((future_quarters['quarter_number'] - 1) % 4) + 1
+    future_quarters['date'] = pd.to_datetime(future_quarters['year'].astype(str) + '-Q' + future_quarters['quarter'].astype(str)) + QuarterEnd(0)
+
+    # Afficher les prévisions dans un graphique
+    fig_pred = go.Figure()
+
+    # Données historiques
+    fig_pred.add_trace(go.Scatter(
+        x=sales_quarter['date'],
+        y=sales_quarter['total_sales_agency'],
+        mode='lines+markers',
+        name='Ventes Historiques Agence',
+        line=dict(color='#D4A437'),
+        marker=dict(size=8),
+        hovertemplate='Date: %{x|%Y-Q%q}<br>Ventes: %{y}'
+    ))
+
+    # Prévisions futures
+    fig_pred.add_trace(go.Scatter(
+        x=future_quarters['date'],
+        y=future_quarters['total_sales_agency_pred'],
+        mode='lines+markers',
+        name='Prévisions Ventes Futures',
+        line=dict(color='#3B3B3B', dash='dash'),
+        marker=dict(size=8),
+        hovertemplate='Date: %{x|%Y-Q%q}<br>Prévision Ventes: %{y:.2f}'
+    ))
+
+    fig_pred.update_layout(
+        title='Prévisions des Ventes Futures de l\'Agence',
+        xaxis_title='Date',
+        yaxis_title='Nombre de Ventes',
+        hovermode='x unified',
+        height=600,
+        font=dict(
+            family='Century Gothic',
+            size=12,
+            color='#3B3B3B'
+        )
+    )
+
+    st.plotly_chart(fig_pred, use_container_width=True)
+
+    # Recommandations
+    st.markdown("""
+    **Analyse :** Les prévisions indiquent une tendance future basée sur les données historiques. Le modèle de régression linéaire utilise les ventes passées et le volume du marché pour estimer les ventes futures.
+
+    **Recommandations :**
+    - **Planification Anticipée :** Utilisez ces prévisions pour planifier les ressources nécessaires, y compris le personnel, le stock et les budgets marketing.
+    - **Surveillance Continue :** Mettez régulièrement à jour le modèle avec de nouvelles données pour affiner les prévisions.
+    - **Stratégies Proactives :** Si les prévisions indiquent une baisse, envisagez des actions pour stimuler les ventes, comme des promotions ou des campagnes publicitaires.
+    """)
+
+    # Transparence et limitations du modèle
+    st.markdown("""
+    **Note :** Les prévisions sont basées sur des tendances historiques et des hypothèses sur la stabilité du marché. Les résultats réels peuvent varier en fonction de nombreux facteurs, y compris les conditions économiques, la concurrence et les événements imprévus.
+
+    **Action Demandée :** Considérez ces prévisions comme un outil pour soutenir la prise de décision stratégique, et non comme une certitude.
+    """)
+
+# --------------------------------------
+# Footer or Additional Content
+# --------------------------------------
+st.markdown(
+    """
+    <hr style="border: 1px solid #D4A437;" />
+    <p style="text-align: center; color: #777777;">
+        © 2024 Century 21 Dashboard | Créé avec Streamlit
+    </p>
+    """,
+    unsafe_allow_html=True
+)
+
+
