@@ -777,10 +777,10 @@ else:
 
 
 # --------------------------------------
-# Step 14: Évolution de la Part de Marché par Commune
+# Step 3: Évolution de la Part de Marché par Commune
 # --------------------------------------
 
-st.header("14. Évolution de la Part de Marché par Commune")
+st.header("3. Évolution de la Part de Marché par Commune")
 
 # Question stratégique
 st.markdown("""
@@ -944,10 +944,10 @@ def add_recommendations(communes, recommendations_list):
 
 
 # --------------------------------------
-# Step 2.bis: Part de Marché dans le Temps par Commune (Graphique en Lignes)
+# Step 4.: Part de Marché dans le Temps par Commune (Graphique en Lignes)
 # --------------------------------------
 
-st.header("2.bis Part de Marché dans le Temps par Commune")
+st.header("4. Part de Marché dans le Temps par Commune")
 
 # Question stratégique pour guider cette section
 st.markdown("Comment la performance de notre agence évolue-t-elle dans les principales communes au fil du temps ?")
@@ -1572,9 +1572,9 @@ else:
 
 
 # --------------------------------------
-# Step 12: Benchmark des Concurrents par Commune
+# Step 10: Benchmark des Concurrents par Commune
 # --------------------------------------
-st.header("12. Benchmark des Concurrents par Commune")
+st.header("10. Benchmark des Concurrents par Commune")
 
 # Convertir les colonnes 'date' en datetime si nécessaire
 df_market_filtered['date'] = pd.to_datetime(df_market_filtered['date'])
@@ -1680,9 +1680,9 @@ if not competitor_sales_melted.empty:
 # Continuing from where we left off
 
 # --------------------------------------
-# Step 13: Tendances des Ventes au Fil du Temps (Trimestriel) - Analyse Avancée
+# Step 11: Tendances des Ventes au Fil du Temps (Trimestriel) - Analyse Avancée
 # --------------------------------------
-st.header("13. Tendances des Ventes au Fil du Temps (Trimestriel)")
+st.header("11. Tendances des Ventes au Fil du Temps (Trimestriel)")
 
 # Calculs nécessaires
 
@@ -1871,9 +1871,9 @@ if not sales_quarter.empty:
 
 
 # --------------------------------------
-# Step 14: Prévisions des Ventes Futures avec Machine Learning
+# Step 12: Prévisions des Ventes Futures avec Machine Learning
 # --------------------------------------
-st.header("14. Prévisions des Ventes Futures avec Machine Learning")
+st.header("12. Prévisions des Ventes Futures avec Machine Learning")
 
 # Question stratégique guidant la section
 st.markdown("""
