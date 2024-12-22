@@ -252,7 +252,7 @@ data = st.secrets["data"]["my_agency_data"]
 df_agency = pd.read_csv(StringIO(data))
 
 # Display the agency data for verification
-st.write(df_agency)
+# st.write(df_agency)
 
 # --------------------------------------
 # Display Logos and Images in Sidebar
@@ -294,7 +294,7 @@ def load_market_data():
 df_market = load_market_data()
 
 # Display market data for verification
-st.write(df_market.head())  # This is for testing. You can remove it later.
+# st.write(df_market.head())  # This is for testing. You can remove it later.
 
 # --------------------------------------
 # Step 3: Data Cleaning and Preprocessing
